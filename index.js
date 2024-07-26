@@ -7,11 +7,40 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
+var sql = require('mssql');
+
+// Connect to SQL Server
+var config = {
+    user: 'cicsadmin',
+    password: 'cicsadmin',
+    server: 'localhost',
+    database: 'cics_database',
+    options: {
+        trustServerCertificate: true
+    }
+}
+sql.connect(config, err => {
+    if (err) {
+        throw err;
+    }
+
+    console.log("Connected to SQL Server");
+});
 
 ////////////////////////////////////////////////////////
 // Route should be customized by application requirement
 ////////////////////////////////////////////////////////
 app.use(bodyParser.json());
+
+app.get('/testSql', (_, res) => {
+    new sql.Request().query("SELECT * FROM dim_customer", (err, result) => {
+        if (err) {
+            console.error(err);
+        } else {
+            res.send(result.recordset);
+        }
+    });
+});
 
 app.get('/testGetString',function(req, res){
     //logger.info('============= sample test api call ================');
