@@ -61,16 +61,13 @@ app.post('/testPostJson',function(req, res){
 	res.json({ 'result': result });
 });
 
-/*
+//Routing for personal information
 var personalInfoRoute = require('./routes/personalInfoRoute')(app);
-app.use('/api/personalInfoRoute', personalInfoRoute);
+app.use('/api/pInfo', personalInfoRoute);
 
+//Routing for registration
 var registrationRoute = require('./routes/registrationRoute')(app);
-app.use('/api/registrationRoute', registrationRoute);
-
-app.listen(3008, function () {
-    console.log('Web server listening on port 3008')
-})*/
+app.use('/api/registration', registrationRoute);
 
 
 app.set('port', 3008);
