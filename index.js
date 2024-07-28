@@ -8,38 +8,28 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 var sql = require('mssql');
-
-// Connect to SQL Server
-var config = {
-    user: 'cicsadmin',
-    password: 'cicsadmin',
-    server: 'localhost',
-    database: 'cics_database',
-    options: {
-        trustServerCertificate: true
-    }
-}
-sql.connect(config, err => {
-    if (err) {
-        throw err;
-    }
-
-    console.log("Connected to SQL Server");
-});
+const { poolPromise } = require('./common/mssqlDb.js')
 
 ////////////////////////////////////////////////////////
 // Route should be customized by application requirement
 ////////////////////////////////////////////////////////
 app.use(bodyParser.json());
 
-app.get('/testSql', (_, res) => {
-    new sql.Request().query("SELECT * FROM dim_customer", (err, result) => {
-        if (err) {
-            console.error(err);
-        } else {
-            res.send(result.recordset);
-        }
-    });
+app.get('/testSql', async (req, res) => {
+	var query = "SELECT * \
+						FROM dim_customer";
+						
+	try {
+		const pool = await poolPromise
+		const result = await pool.request()
+		    .input('customer_id', sql.Int, req.params.customerId)
+			.query(query)      
+
+		res.json(result.recordset)
+	} catch (err) {
+		res.status(500)
+		res.send(err.message)
+	}
 });
 
 app.get('/testGetString',function(req, res){
