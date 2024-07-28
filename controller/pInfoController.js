@@ -91,6 +91,125 @@ module.exports.createPInfo = async function(req, res) {
 	}
 };
 
+//http://localhost:3008/api/pInfo/v1/updatePInfo
+module.exports.updatePInfo = async function(req, res) {
+	console.log(JSON.stringify(req.params) + " " + JSON.stringify(req.query) + " " +JSON.stringify(req.body));
+	// query
+    var query = "UPDATE dim_customer SET ";
+	var body = req.body;
+	
+	if (body==undefined) {
+		res.status(500)
+		res.send('Please input customer info');
+		return;
+	} else if (body.customerId==null) {
+		res.status(500)
+		res.send('Unknown user');
+		return;
+	}
+	
+	try {
+		const pool = await poolPromise
+
+		let result = await pool.request();
+		let atleastOneUpdate = false;
+		
+		result = await result.input('customerId', sql.Int, body.customerId);
+		
+		if (body.firstName!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "first_name=@firstName ";
+			result = await result.input('firstName', sql.NVarChar(50), body.firstName);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.lastName!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "last_name=@lastName ";
+			result = await result.input('lastName', sql.NVarChar(50), body.lastName);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.gender!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "gender=@gender ";
+			result = await result.input('gender', sql.NVarChar(50), body.gender);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.dob!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "dob=@dob ";
+			result = await result.input('dob', sql.DateTime, body.dob);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.address!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "address=@address ";
+			result = await result.input('address', sql.NVarChar(100), body.address);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.city!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "city=@city ";
+			result = await result.input('city', sql.NVarChar(50), body.city);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.postalCode!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "postal_code=@postalCode ";
+			result = await result.input('postalCode', sql.VarChar(7), body.postalCode);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.phoneNo!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "phone_no=@phoneNo ";
+			result = await result.input('phoneNo', sql.BigInt, body.phoneNo);
+			atleastOneUpdate = true;
+		}
+		
+		if (body.email!==undefined) {
+			if (atleastOneUpdate) {
+				query += ",";
+			}
+			query += "email=@email ";
+			result = await result.input('email', sql.VarChar(100), body.email);
+			atleastOneUpdate = true;
+		}
+		
+		query += "WHERE customer_id=@customerId ";
+		
+		result = await result.query(query);
+		
+		console.log(result);
+		
+		res.json(result)
+	} catch (err) {
+		res.status(500)
+		res.send(err.message)
+	}
+};
+
 //http://localhost:3008/api/pInfo/v1/postPInfo
 module.exports.postPInfo = function(req, res) {
 	console.log(req.body);
