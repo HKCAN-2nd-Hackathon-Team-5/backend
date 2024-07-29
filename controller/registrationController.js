@@ -1,12 +1,12 @@
 'use strict';
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
 ////////////////////////////////
 // Config and logger
 ////////////////////////////////
 
-module.exports.getRegistration = function(req, res) {
+export function getRegistration(req, res) {
 	console.log(req.params + " " +req.body);
 	
 	var result = 'testing result';
@@ -14,7 +14,7 @@ module.exports.getRegistration = function(req, res) {
 //    return;
 };
 
-module.exports.postRegistration = function(req, res) {
+export function postRegistration(req, res) {
 	console.log(req.body);
 	
 };

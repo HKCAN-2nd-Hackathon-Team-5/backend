@@ -1,6 +1,6 @@
 'use strict';
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
 ////////////////////////////////
 // Config and logger
@@ -9,12 +9,12 @@ var router = express.Router();
 ////////////////////////////////
 // Shared variables
 ////////////////////////////////
-var register = require('../controller/registrationController');
+import * as register from '../controller/registrationController.js';
 
 ////////////////////////////////
 // export funcitons  (Routes)
 ////////////////////////////////
-module.exports = function() {
+export default function() {
 	router.get('/v1/getRegistration', register.getRegistration);
     router.post('/v1/postRegistration', register.postRegistration);
 

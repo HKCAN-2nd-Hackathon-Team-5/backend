@@ -4,11 +4,11 @@
 ////////////////////////////////
 // Config and logger
 ////////////////////////////////
-var express = require('express');
+import express from 'express';
 var app = express();
-var bodyParser = require('body-parser');
-var sql = require('mssql');
-const { poolPromise } = require('./common/mssqlDb.js')
+import bodyParser from 'body-parser';
+import sql from 'mssql';
+import poolPromise from './common/mssqlDb.js';
 
 ////////////////////////////////////////////////////////
 // Route should be customized by application requirement
@@ -52,12 +52,12 @@ app.post('/testPostJson',function(req, res){
 });
 
 //Routing for personal information
-var personalInfoRoute = require('./routes/personalInfoRoute')(app);
-app.use('/api/pInfo', personalInfoRoute);
+import personalInfoRoute from './routes/personalInfoRoute.js';
+app.use('/api/pInfo', personalInfoRoute());
 
 //Routing for registration
-var registrationRoute = require('./routes/registrationRoute')(app);
-app.use('/api/registration', registrationRoute);
+import registrationRoute from './routes/registrationRoute.js';
+app.use('/api/registration', registrationRoute());
 
 
 app.set('port', 3008);
@@ -65,4 +65,4 @@ var server = app.listen(app.get('port'), function() {
     console.log('Node Express server listening on port ' + server.address().port);
 });
 
-module.exports = app;
+export default app;

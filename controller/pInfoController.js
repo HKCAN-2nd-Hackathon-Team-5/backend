@@ -1,9 +1,9 @@
 'use strict';
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
-var sql = require('mssql');
-const { poolPromise } = require('../common/mssqlDb.js')
+import sql from 'mssql';
+import poolPromise from '../common/mssqlDb.js';
 
 
 
@@ -13,7 +13,7 @@ const { poolPromise } = require('../common/mssqlDb.js')
 
 //http://localhost:3008/api/pInfo/v1/getPInfo
 //http://localhost:3008/api/pInfo/v1/getPInfo?customerId=1
-module.exports.getPInfo = async function(req, res) {
+export async function getPInfo(req, res) {
 	console.log(JSON.stringify(req.params) + " " + JSON.stringify(req.query) + " " +JSON.stringify(req.body));
 	// query
     var query = "SELECT * \
@@ -47,7 +47,7 @@ module.exports.getPInfo = async function(req, res) {
 };
 
 //http://localhost:3008/api/pInfo/v1/createPInfo
-module.exports.createPInfo = async function(req, res) {
+export async function createPInfo(req, res) {
 	console.log(JSON.stringify(req.params) + " " + JSON.stringify(req.query) + " " +JSON.stringify(req.body));
 	// query
     var query = "INSERT INTO \
@@ -92,7 +92,7 @@ module.exports.createPInfo = async function(req, res) {
 };
 
 //http://localhost:3008/api/pInfo/v1/updatePInfo
-module.exports.updatePInfo = async function(req, res) {
+export async function updatePInfo(req, res) {
 	console.log(JSON.stringify(req.params) + " " + JSON.stringify(req.query) + " " +JSON.stringify(req.body));
 	// query
     var query = "UPDATE dim_customer SET ";
@@ -211,7 +211,7 @@ module.exports.updatePInfo = async function(req, res) {
 };
 
 //http://localhost:3008/api/pInfo/v1/postPInfo
-module.exports.postPInfo = function(req, res) {
+export function postPInfo(req, res) {
 	console.log(req.body);
 	
 };

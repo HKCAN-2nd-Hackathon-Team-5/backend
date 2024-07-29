@@ -1,6 +1,6 @@
 'use strict';
 
-const sql = require('mssql')
+import sql from 'mssql';
 const config = {
     user: 'cicsadmin',
     password: 'cicsadmin',
@@ -11,14 +11,10 @@ const config = {
     }
 }
 
-const poolPromise = new sql.ConnectionPool(config)
+export default new sql.ConnectionPool(config)
   .connect()
   .then(pool => {
     console.log('Connected to MSSQL')
     return pool
   })
   .catch(err => console.log('Database Connection Failed! Bad Config: ', err))
-
-module.exports = {
-  sql, poolPromise
-}

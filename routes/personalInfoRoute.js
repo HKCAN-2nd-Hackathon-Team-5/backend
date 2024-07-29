@@ -1,6 +1,6 @@
 'use strict';
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
 ////////////////////////////////
 // Config and logger
@@ -9,12 +9,12 @@ var router = express.Router();
 ////////////////////////////////
 // Shared variables
 ////////////////////////////////
-var pInfo = require('../controller/pInfoController');
+import * as pInfo from '../controller/pInfoController.js';
 
 ////////////////////////////////
 // export funcitons  (Routes)
 ////////////////////////////////
-module.exports = function() {
+export default function() {
 	router.get('/v1/getPInfo', pInfo.getPInfo);
 	router.post('/v1/createPInfo', pInfo.createPInfo);
 	router.put('/v1/updatePInfo', pInfo.updatePInfo);
