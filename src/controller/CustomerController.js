@@ -1,5 +1,4 @@
 import databaseQuery from "../common/DatabaseQuery.js";
-import { sendError } from "../common/Utility.js";
 
 const columnName = ['first_name', 'last_name', 'gender', 'dob', 'address', 'postal_code', 'phone_no', 'email'];
 
@@ -30,14 +29,7 @@ export function create(req, res) {
     }
 
     query += ')';
-    const [err, data] = databaseQuery(query, req);
-
-    if (err) {
-        sendError(err, res);
-        return;
-    }
-
-    res.status(201).json(data);
+    databaseQuery(query, req, res, 'create');
 }
 
 // GET http://localhost:3008/api/v1/customer
@@ -49,14 +41,7 @@ export function read(req, res) {
         query += ` WHERE id = ${req.params.id}`;
     }
 
-    const [err, data] = databaseQuery(query, req);
-
-    if (err) {
-        sendError(err, res);
-        return;
-    }
-
-    res.status(200).json(data.recordset);
+    databaseQuery(query, req, res, 'read');
 }
 
 // PUT http://localhost:3008/api/v1/customer/:id
@@ -84,24 +69,10 @@ export function update(req, res) {
     }
 
     query += ` WHERE id = ${req.params.id}`;
-    const [err, data] = databaseQuery(query, req);
-
-    if (err) {
-        sendError(err, res);
-        return;
-    }
-
-    res.status(200).json(data);
+    databaseQuery(query, req, res, 'update');
 }
 
 // DELETE http://localhost:3008/api/v1/customer/:id
 export function remove(req, res) {
-    const [err, data] = databaseQuery(`DELETE FROM dim_customer WHERE id = ${req.params.id}`, req);
-
-    if (err) {
-        sendError(err, res);
-        return;
-    }
-
-    res.status(200).json(data);
+    databaseQuery(`DELETE FROM dim_customer WHERE id = ${req.params.id}`, req, res, 'delete');
 }
