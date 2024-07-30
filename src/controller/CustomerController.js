@@ -1,35 +1,46 @@
+import sql from 'mssql';
 import databaseQuery from "../common/DatabaseQuery.js";
 
-const columnName = ['first_name', 'last_name', 'gender', 'dob', 'address', 'postal_code', 'phone_no', 'email'];
+const columns = [
+    { name: 'first_name', type: sql.NVarChar(50) },
+    { name: 'last_name', type: sql.NVarChar(50) },
+    { name: 'gender', type: sql.NVarChar(50) },
+    { name: 'dob', type: sql.DateTime },
+    { name: 'address', type: sql.NVarChar(100) },
+    { name: 'city', type: sql.NVarChar(50) },
+    { name: 'postal_code', type: sql.Char(6) },
+    { name: 'phone_no', type: sql.BigInt },
+    { name: 'email', type: sql.VarChar(100) }
+]
 
 // POST http://localhost:3008/api/v1/customer
 export function create(req, res) {
     if (req.body === undefined) {
-        res.status(400).send('Undefined post body.');
+        res.status(400).send('Undefined request body.');
         return;
     }
 
-    for (let i = 0; i < columnName.length; i++) {
-        if (req.body[columnName[i]] === undefined) {
-            res.status(400).send('Invalid post body.');
+    for (let i = 0; i < columns.length; i++) {
+        if (req.body[columns[i].name] === undefined) {
+            res.status(400).send('Invalid request body.');
             return;
         }
     }
 
     let query = 'INSERT INTO dim_customer (first_name';
 
-    for (let i = 1; i < columnName; i++) {
-        query += `, ${columnName[i]}`;
+    for (let i = 1; i < columns.length; i++) {
+        query += `, ${columns[i].name}`;
     }
 
-    query += `) VALUES (${req.body.first_name}`;
+    query += ') VALUES (@first_name';
 
-    for (let i = 1; i < columnName; i++) {
-        query += `, ${req.body[columnName[i]]}`;
+    for (let i = 1; i < columns.length; i++) {
+        query += `, @${columns[i].name}`;
     }
 
     query += ')';
-    databaseQuery(query, req, res, 'create');
+    databaseQuery(query, columns, req, res);
 }
 
 // GET http://localhost:3008/api/v1/customer
@@ -41,38 +52,43 @@ export function read(req, res) {
         query += ` WHERE id = ${req.params.id}`;
     }
 
-    databaseQuery(query, req, res, 'read');
+    databaseQuery(query, null, req, res);
 }
 
 // PUT http://localhost:3008/api/v1/customer/:id
 export function update(req, res) {
-    let query = 'UPDATE dim_customer';
-    let hasUpdate = false;
+    if (req.body === undefined) {
+        res.status(400).send('Undefined request body.');
+        return;
+    }
 
-    columnName.forEach(column => {
-        if (req.body[column] === undefined) {
+    let query = 'UPDATE dim_customer';
+    const params = [];
+
+    columns.forEach(column => {
+        if (req.body[column.name] === undefined) {
             return;
         }
 
-        if (!hasUpdate) {
-            query += ` SET ${column} = `;
-            hasUpdate = true;
+        if (params.length === 0) {
+            query += ` SET ${column.name} = @${column.name}`;
         } else {
-            query += `, ${column} = `;
+            query += `, ${column.name} = @${column.name}`;
         }
 
-        query += column === 'dob' ? `DATE '${req.body.dob}'` : req.body[column];
+        params.push(column);
     });
 
-    if (!hasUpdate) {
+    if (params.length === 0) {
+        res.status(400).send('Empty request body.');
         return;
     }
 
     query += ` WHERE id = ${req.params.id}`;
-    databaseQuery(query, req, res, 'update');
+    databaseQuery(query, params, req, res);
 }
 
 // DELETE http://localhost:3008/api/v1/customer/:id
 export function remove(req, res) {
-    databaseQuery(`DELETE FROM dim_customer WHERE id = ${req.params.id}`, req, res, 'delete');
+    databaseQuery(`DELETE FROM dim_customer WHERE id = ${req.params.id}`, null, req, res);
 }
