@@ -12,7 +12,7 @@ app.use('/api/v1/customer', customerRouter);
 app.use('/api/v1/registration', registrationRouter);
 
 const server = app.listen(3008, () => {
-	const host = server.address().address;
-	const port = server.address().port;
-	console.log(`Backend server listening at ${host === '::' ? 'http://localhost' : 'https://' + host}:${port}`);
+    const host = server.address().address;
+    const port = server.address().port;
+    console.log(`Backend server listening at ${host === '::' ? 'http://localhost' : 'https://' + host}:${port}`);
 })

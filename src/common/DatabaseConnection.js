@@ -5,9 +5,7 @@ const config = {
     password: 'cicsadmin',
     server: 'localhost',
     database: 'cics_database',
-    options: {
-        trustServerCertificate: true
-    }
+    options: { trustServerCertificate: true }
 }
 
 export default function (app) {
