@@ -8,7 +8,7 @@
     statement.query(query, (err, data) => {
         if (err) {
             console.error(err);
-            res.status(500).send('Server error.');
+            res.sendStatus(500);
             return;
         }
 

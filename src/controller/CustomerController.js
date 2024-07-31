@@ -16,13 +16,13 @@ const columns = [
 // POST http://localhost:3008/api/v1/customer
 export function create(req, res) {
     if (req.body === undefined) {
-        res.status(400).send('Undefined request body.');
+        res.status(400).send('Undefined Request Body');
         return;
     }
 
     for (let i = 0; i < columns.length; i++) {
         if (req.body[columns[i].name] === undefined) {
-            res.status(400).send('Invalid request body.');
+            res.status(400).send('Invalid Request Body');
             return;
         }
     }
@@ -58,7 +58,7 @@ export function read(req, res) {
 // PUT http://localhost:3008/api/v1/customer/:id
 export function update(req, res) {
     if (req.body === undefined) {
-        res.status(400).send('Undefined request body.');
+        res.status(400).send('Undefined Request Body');
         return;
     }
 
@@ -80,7 +80,7 @@ export function update(req, res) {
     });
 
     if (params.length === 0) {
-        res.status(400).send('Empty request body.');
+        res.status(400).send('Empty Request Body');
         return;
     }
 
