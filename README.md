@@ -25,6 +25,18 @@ rows.
 
 - return: an array of all the customers
 
+`GET http://localhost:3008/api/v1/customer/query`
+
+- possible queries:
+    - `first_name`
+    - `last_name`
+    - `gender`
+    - `address`
+    - `city`
+    - `postal_code`
+    - `email`
+- return: an array of customers that satisfy all the queries
+
 `GET http://localhost:3008/api/v1/customer/:id`
 
 - return: an array of the customer with the specified id

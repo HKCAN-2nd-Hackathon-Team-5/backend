@@ -2,7 +2,7 @@
     let statement = req.app.locals.db.request();
 
     params?.forEach(param => {
-        statement = statement.input(param.name, param.type, req.body[param.name]);
+        statement = statement.input(param.name, param.type, param.value);
     })
 
     statement.query(query, (err, data) => {

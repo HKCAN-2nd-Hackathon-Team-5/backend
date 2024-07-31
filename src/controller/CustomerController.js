@@ -20,11 +20,15 @@ export function create(req, res) {
         return;
     }
 
+    const params = [];
+
     for (let i = 0; i < columns.length; i++) {
         if (req.body[columns[i].name] === undefined) {
             res.status(400).send('Invalid Request Body');
             return;
         }
+
+        params.push({ name: columns[i].name, type: columns[i].type, value: req.body[columns[i].name] });
     }
 
     let query = 'INSERT INTO dim_customer (first_name';
@@ -40,7 +44,7 @@ export function create(req, res) {
     }
 
     query += ')';
-    databaseQuery(query, columns, req, res);
+    databaseQuery(query, params, req, res);
 }
 
 // GET http://localhost:3008/api/v1/customer
@@ -53,6 +57,32 @@ export function read(req, res) {
     }
 
     databaseQuery(query, null, req, res);
+}
+
+// GET http://localhost:3008/api/v1/customer/query
+export function readBySearch(req, res) {
+    let query = 'SELECT * FROM dim_customer WHERE ';
+    const params = [];
+
+    columns.forEach(column => {
+        if (req.query[column.name] === undefined || column.type === sql.DateTime || column.type === sql.BigInt) {
+            return;
+        }
+
+        if (params.length > 0) {
+            query += ' AND ';
+        }
+
+        query += `${column.name} LIKE @${column.name}`;
+        params.push({ name: column.name, type: column.type, value: '%' + req.query[column.name] + '%' });
+    })
+
+    if (params.length === 0) {
+        res.status(400).send('Empty Request Query');
+        return;
+    }
+
+    databaseQuery(query, params, req, res);
 }
 
 // PUT http://localhost:3008/api/v1/customer/:id
@@ -76,7 +106,7 @@ export function update(req, res) {
             query += `, ${column.name} = @${column.name}`;
         }
 
-        params.push(column);
+        params.push({ name: column.name, type: column.type, value: req.body[column.name] });
     });
 
     if (params.length === 0) {
