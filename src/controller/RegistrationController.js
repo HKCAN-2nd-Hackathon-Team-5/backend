@@ -1,4 +1,4 @@
-import databaseQuery from "../common/DatabaseQuery.js";
+import databaseQuery from "../utility/DatabaseQuery.js";
 
 // POST http://localhost:3008/api/v1/registration
 export function create(req, res) {

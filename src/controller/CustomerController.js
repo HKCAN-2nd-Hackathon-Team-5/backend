@@ -1,5 +1,5 @@
 import sql from 'mssql';
-import databaseQuery from "../common/DatabaseQuery.js";
+import databaseQuery from "../utility/DatabaseQuery.js";
 
 const columns = [
     { name: 'first_name', type: sql.NVarChar(50) },
