@@ -16,7 +16,7 @@ app.use('/api/v1/customer', customerRouter);
 app.use('/api/v1/registration', registrationRouter);
 app.use('/api/v1/email', autoEmailRouter);
 
-const server = app.listen(3008, () => {
+const server = app.listen(process.env.PORT, () => {
     const host = server.address().address;
     const port = server.address().port;
     console.log(`Backend server listening at ${host === '::' ? 'http://localhost' : 'https://' + host}:${port}`);
