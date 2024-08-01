@@ -15,7 +15,7 @@ export function sendRegistrationConfirmation(req, res) {
     const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: 'sample@gmail.com',
-        subject: 'Confirmation: Your application for [Event] has been submitted',
+        subject: 'Confirmation: Your application for ${Event} has been submitted',
         text: 'Testing :)'
     };
 
