@@ -2,20 +2,20 @@ IF DB_ID('cics_database') IS NULL
     CREATE DATABASE cics_database;
 GO
 USE cics_database;
--- customer_id with composite key of CONCAT(phone_no,' ',first_name)
-CREATE TABLE dim_customer (
-    customer_id nvarchar(100) PRIMARY KEY
-    ,first_name nvarchar(50) NOT NULL
-    ,last_name nvarchar(50) NOT NULL
-    ,gender nvarchar(50) NOT NULL
-    ,dob date
-    ,address nvarchar(100)
-    ,city nvarchar(50)
-    ,postal_code char(6)
-    ,phone_no bigint
-    ,email varchar(100)
-    ,credit_balance decimal(38,6) DEFAULT 0
-    );
+-- student_id with composite key of CONCAT(phone_no,' ',first_name)
+CREATE TABLE dim_student (
+	student_id int IDENTITY(1,1) PRIMARY KEY
+	,first_name nvarchar(50) NOT NULL
+	,last_name nvarchar(50) NOT NULL
+	,gender nvarchar(50) NOT NULL
+	,dob date
+	,address nvarchar(100)
+	,city nvarchar(50)
+	,postal_code char(7)
+	,phone_no bigint
+	,email varchar(100)
+	,credit_balance decimal(38,6) DEFAULT 0
+	);
 -- depends if CICS have course code as id
 CREATE TABLE dim_course (
     course_id int IDENTITY(1,1) PRIMARY KEY
@@ -31,8 +31,11 @@ CREATE TABLE dim_course (
     ,eb_discount_ind char(1)
     ,eb_discount_pct decimal(38,6)
     );
-INSERT INTO dim_customer (first_name, last_name, gender) VALUES ('Anson', 'Ng', 'M');
-INSERT INTO dim_customer (first_name, last_name, gender) VALUES ('Stephanie', 'Yip' ,'F');
-INSERT INTO dim_customer (first_name, last_name, gender) VALUES ('Timothy', 'Wong', 'M');
-INSERT INTO dim_customer (first_name, last_name, gender) VALUES ('Whitney', 'Yuen', 'F');
-INSERT INTO dim_customer (first_name, last_name, gender) VALUES ('Winnie', 'Choi', 'F');
+	
+--Test cases created for dim_student table
+INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST1', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000001, 'test1@test.com');
+INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST2', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000002, 'test2@test.com');
+INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST3', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000003, 'test3@test.com');
+INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST4', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000004, 'test4@test.com');
+INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST5', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000005, 'test5@test.com');
+
