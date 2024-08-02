@@ -49,8 +49,42 @@ CREATE TABLE dim_course_except_date (
 	,course_id 				int
 	,except_date			date
     ); 	
-	
-
+-- application form setup
+CREATE TABLE dim_form (
+	form_id int 				IDENTITY(1,1) PRIMARY KEY
+	,title_en		 			varchar(255)
+	,title_zh_hant				nvarchar(255)
+	,title_zh		      		varchar(255)
+	,desc_en	          		varchar(1000)
+	,desc_zh_hant          		nvarchar(1000)
+	,desc_zh	          		nvarchar(1000)
+	,start_date          		date
+	,end_date            		date
+	,is_kid_form				char
+	,early_bird_end_date		date
+	,early_bird_discount		decimal(38,6)
+	,ig_discount				decimal(38,6)
+	,add_questions_en_1			varchar(1000)
+	,add_questions_zh_hant_1	nvarchar(1000)
+	,add_questions_zh_1			nvarchar(1000)
+	,add_questions_en_2			varchar(1000)
+	,add_questions_zh_hant_2	nvarchar(1000)
+	,add_questions_zh_2			nvarchar(1000)
+	,add_questions_en_3			varchar(1000)
+	,add_questions_zh_hant_3	nvarchar(1000)
+	,add_questions_zh_3			nvarchar(1000)
+	,add_questions_en_4			varchar(1000)
+	,add_questions_zh_hant_4	nvarchar(1000)
+	,add_questions_zh_4			nvarchar(1000)
+	,add_questions_en_5			varchar(1000)
+	,add_questions_zh_hant_5	nvarchar(1000)
+	,add_questions_zh_5			nvarchar(1000)
+    );
+--assign course to application form for setup
+CREATE TABLE dim_form_course (
+	form_id 	int
+	,course_id	int
+    ); 
 	
 --Test cases created for dim_student table
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST1', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000001, 'test1@test.com');
@@ -72,3 +106,13 @@ INSERT INTO dim_course_weekday (course_id, weekday) VALUES (2, 4);
 
 --Test case created for dim_course_except_date table (if having any)
 INSERT INTO dim_course_except_date (course_id, except_date) VALUES (1, '20240814');
+
+--Test cases created for dim_form table
+INSERT INTO dim_form (title_en,title_zh_hant,title_zh,desc_en,desc_zh_hant,desc_zh,start_date,end_date,is_kid_form,early_bird_end_date,early_bird_discount,ig_discount,add_questions_en_1,add_questions_zh_hant_1,add_questions_zh_1,add_questions_en_2,add_questions_zh_hant_2,add_questions_zh_2,add_questions_en_3,add_questions_zh_hant_3,add_questions_zh_3,add_questions_en_4,add_questions_zh_hant_4,add_questions_zh_4,add_questions_en_5,add_questions_zh_hant_5,add_questions_zh_5) VALUES ('Form Title 1','報名表標題(繁)1','報名表標題(簡)1','Form Content 1','報名表內容(繁)1','報名表內容(簡)1','20240801','20240812','Y','20240810','23','17','Additional Question if any 1?','附加問題如有(繁)1?','附加問題如有(簡)1?','Additional Question if any 2?','附加問題如有(繁)2?','附加問題如有(簡)2?','Additional Question if any 3?','附加問題如有(繁)3?','附加問題如有(簡)3?','Additional Question if any 4?','附加問題如有(繁)4?','附加問題如有(簡)4?','Additional Question if any 5?','附加問題如有(繁)5?','附加問題如有(簡)5?');
+INSERT INTO dim_form (title_en,title_zh_hant,title_zh,desc_en,desc_zh_hant,desc_zh,start_date,end_date,is_kid_form,early_bird_end_date,early_bird_discount,ig_discount,add_questions_en_1,add_questions_zh_hant_1,add_questions_zh_1,add_questions_en_2,add_questions_zh_hant_2,add_questions_zh_2,add_questions_en_3,add_questions_zh_hant_3,add_questions_zh_3,add_questions_en_4,add_questions_zh_hant_4,add_questions_zh_4,add_questions_en_5,add_questions_zh_hant_5,add_questions_zh_5) VALUES ('Form Title 2','報名表標題(繁)2','報名表標題(簡)2','Form Content 2','報名表內容(繁)2','報名表內容(簡)2','20240801','20240812','N','20240810','23','17','Additional Question if any 1?','附加問題如有(繁)1?','附加問題如有(簡)1?','Additional Question if any 2?','附加問題如有(繁)2?','附加問題如有(簡)2?','Additional Question if any 3?','附加問題如有(繁)3?','附加問題如有(簡)3?','Additional Question if any 4?','附加問題如有(繁)4?','附加問題如有(簡)4?','Additional Question if any 5?','附加問題如有(繁)5?','附加問題如有(簡)5?');
+
+--Test cases created for dim_form_course table
+INSERT INTO dim_form_course (form_id, course_id) VALUES (1, 2);
+INSERT INTO dim_form_course (form_id, course_id) VALUES (2, 1);
+
+
