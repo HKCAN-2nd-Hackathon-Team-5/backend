@@ -19,10 +19,10 @@ export function sendRegistrationConfirmation(req, res) {
         text: 'Testing :)'
     };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error(error);
             res.sendStatus(500);
-            console.error(err);
             return;
         }
 

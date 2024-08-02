@@ -12,7 +12,7 @@ export default function (app) {
     new sql.ConnectionPool(config).connect().then(pool => {
         app.locals.db = pool;
         console.log('Connected to MSSQL')
-    }).catch(err => {
-        console.error('Error creating connection pool', err)
+    }).catch(error => {
+        console.error('Error creating connection pool', error)
     });
 }

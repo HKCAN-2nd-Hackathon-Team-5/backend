@@ -44,7 +44,16 @@ export function create(req, res) {
     }
 
     query += ')';
-    databaseQuery(query, params, req, res);
+
+    databaseQuery(req.app.locals.db, query, params, (error, data) => {
+        if (error) {
+            console.error(error);
+            res.sendStatus(500);
+            return;
+        }
+
+        res.status(201).send(data);
+    });
 }
 
 // GET http://localhost:3008/api/v1/customer
@@ -56,7 +65,15 @@ export function read(req, res) {
         query += ` WHERE id = ${req.params.id}`;
     }
 
-    databaseQuery(query, null, req, res);
+    databaseQuery(req.app.locals.db, query, null, (error, data) => {
+        if (error) {
+            console.error(error);
+            res.sendStatus(500);
+            return;
+        }
+
+        res.status(200).send(data.recordset);
+    });
 }
 
 // GET http://localhost:3008/api/v1/customer/query
@@ -82,7 +99,15 @@ export function readBySearch(req, res) {
         return;
     }
 
-    databaseQuery(query, params, req, res);
+    databaseQuery(req.app.locals.db, query, params, (error, data) => {
+        if (error) {
+            console.error(error);
+            res.sendStatus(500);
+            return;
+        }
+
+        res.status(200).send(data.recordset);
+    });
 }
 
 // PUT http://localhost:3008/api/v1/customer/:id
@@ -115,10 +140,26 @@ export function update(req, res) {
     }
 
     query += ` WHERE id = ${req.params.id}`;
-    databaseQuery(query, params, req, res);
+    databaseQuery(req.app.locals.db, query, params, (error, data) => {
+        if (error) {
+            console.error(error);
+            res.sendStatus(500);
+            return;
+        }
+
+        res.status(200).send(data);
+    });
 }
 
 // DELETE http://localhost:3008/api/v1/customer/:id
 export function remove(req, res) {
-    databaseQuery(`DELETE FROM dim_customer WHERE id = ${req.params.id}`, null, req, res);
+    databaseQuery(req.app.locals.db, `DELETE FROM dim_customer WHERE id = ${req.params.id}`, null, (error, data) => {
+        if (error) {
+            console.error(error);
+            res.sendStatus(500);
+            return;
+        }
+
+        res.status(200).send(data);
+    });
 }
