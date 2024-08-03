@@ -1,5 +1,5 @@
 import express from 'express';
-import * as registrationController from '../controller/RegistrationController.js';
+import * as registrationController from '../controller/ApplicationController.js';
 
 let router = express.Router();
 router.post('/', registrationController.create);

@@ -31,13 +31,13 @@ export function create(req, res) {
         params.push({ name: columns[i].name, type: columns[i].type, value: req.body[columns[i].name] });
     }
 
-    let query = 'INSERT INTO dim_customer (first_name';
+    let query = 'INSERT INTO dim_student (first_name';
 
     for (let i = 1; i < columns.length; i++) {
         query += `, ${columns[i].name}`;
     }
 
-    query += ') VALUES (@first_name';
+    query += ') OUTPUT Inserted.student_id VALUES (@first_name';
 
     for (let i = 1; i < columns.length; i++) {
         query += `, @${columns[i].name}`;
@@ -59,7 +59,7 @@ export function create(req, res) {
 // GET http://localhost:3008/api/v1/customer
 // GET http://localhost:3008/api/v1/customer/:id
 export function read(req, res) {
-    let query = 'SELECT * FROM dim_customer';
+    let query = 'SELECT * FROM dim_student';
 
     if (req.params.id !== undefined) {
         query += ` WHERE id = ${req.params.id}`;
@@ -78,7 +78,7 @@ export function read(req, res) {
 
 // GET http://localhost:3008/api/v1/customer/query
 export function readBySearch(req, res) {
-    let query = 'SELECT * FROM dim_customer WHERE ';
+    let query = 'SELECT * FROM dim_student WHERE ';
     const params = [];
 
     columns.forEach(column => {
@@ -117,7 +117,7 @@ export function update(req, res) {
         return;
     }
 
-    let query = 'UPDATE dim_customer';
+    let query = 'UPDATE dim_student';
     const params = [];
 
     columns.forEach(column => {
@@ -153,7 +153,7 @@ export function update(req, res) {
 
 // DELETE http://localhost:3008/api/v1/customer/:id
 export function remove(req, res) {
-    databaseQuery(req.app.locals.db, `DELETE FROM dim_customer WHERE id = ${req.params.id}`, null, (error, data) => {
+    databaseQuery(req.app.locals.db, `DELETE FROM dim_student WHERE id = ${req.params.id}`, null, (error, data) => {
         if (error) {
             console.error(error);
             res.sendStatus(500);
