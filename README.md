@@ -5,9 +5,9 @@
 For the API that has return: none, there's actually an object returned by the database containing the number of affected
 rows.
 
-### Customer
+### Student
 
-`POST http://localhost:3008/api/v1/customer`
+`POST http://localhost:3008/api/v1/student`
 
 - body: an object containing all the following properties
     - `first_name: string`
@@ -21,11 +21,11 @@ rows.
     - `email: string`
 - return: none
 
-`GET http://localhost:3008/api/v1/customer`
+`GET http://localhost:3008/api/v1/student`
 
-- return: an array of all the customers
+- return: an array of all the students
 
-`GET http://localhost:3008/api/v1/customer/query`
+`GET http://localhost:3008/api/v1/student/query`
 
 - possible queries:
     - `first_name`
@@ -35,13 +35,13 @@ rows.
     - `city`
     - `postal_code`
     - `email`
-- return: an array of customers that satisfy all the queries
+- return: an array of students that satisfy all the queries
 
-`GET http://localhost:3008/api/v1/customer/:id`
+`GET http://localhost:3008/api/v1/student/:student_id`
 
-- return: an array of the customer with the specified id
+- return: an array of the student with the specified id
 
-`PUT http://localhost:3008/api/v1/customer/:id`
+`PUT http://localhost:3008/api/v1/student/:student_id`
 
 - body: an object containing any of the following properties
     - `first_name: string`
@@ -55,10 +55,11 @@ rows.
     - `email: string`
 - return: none
 
-`DELETE http://localhost:3008/api/v1/customer/:id`
+`DELETE http://localhost:3008/api/v1/student/:student_id`
 
 - return: none
 
-### Registration
+### Application
 
-Should be similar to the Customer one. Let's see if we have time to update the document.
+Please read *Functions for Backend* for more details.
+

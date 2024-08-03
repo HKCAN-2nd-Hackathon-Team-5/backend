@@ -2,5 +2,5 @@
 import * as autoEmailController from '../controller/AutoEmailController.js';
 
 const router = express.Router();
-router.post('/registration-confirmation/customer-id/:customerId', autoEmailController.sendRegistrationConfirmation);
+router.post('/application-confirmation/student-id/:studentId', autoEmailController.sendApplicationConfirmation);
 export default router;

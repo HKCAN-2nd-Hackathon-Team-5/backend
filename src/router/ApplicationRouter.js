@@ -1,9 +1,9 @@
 import express from 'express';
-import * as registrationController from '../controller/ApplicationController.js';
+import * as applicationController from '../controller/ApplicationController.js';
 
 let router = express.Router();
-router.post('/', registrationController.create);
-router.get('/', registrationController.read);
-router.put('/', registrationController.update);
-router.delete('/', registrationController.remove);
+router.post('/', applicationController.create);
+router.get('/', applicationController.read);
+router.put('/', applicationController.update);
+router.delete('/', applicationController.remove);
 export default router;

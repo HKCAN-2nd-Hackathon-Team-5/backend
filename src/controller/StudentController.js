@@ -13,7 +13,7 @@ const columns = [
     { name: 'email', type: sql.VarChar(100) }
 ]
 
-// POST http://localhost:3008/api/v1/customer
+// POST http://localhost:3008/api/v1/student
 export function create(req, res) {
     if (req.body === undefined) {
         res.status(400).send('Undefined Request Body');
@@ -56,13 +56,13 @@ export function create(req, res) {
     });
 }
 
-// GET http://localhost:3008/api/v1/customer
-// GET http://localhost:3008/api/v1/customer/:id
+// GET http://localhost:3008/api/v1/student
+// GET http://localhost:3008/api/v1/student/:student_id
 export function read(req, res) {
     let query = 'SELECT * FROM dim_student';
 
-    if (req.params.id !== undefined) {
-        query += ` WHERE id = ${req.params.id}`;
+    if (req.params.student_id !== undefined) {
+        query += ` WHERE student_id = ${req.params.student_id}`;
     }
 
     databaseQuery(req.app.locals.db, query, null, (error, data) => {
@@ -76,7 +76,7 @@ export function read(req, res) {
     });
 }
 
-// GET http://localhost:3008/api/v1/customer/query
+// GET http://localhost:3008/api/v1/student/query
 export function readBySearch(req, res) {
     let query = 'SELECT * FROM dim_student WHERE ';
     const params = [];
@@ -110,7 +110,7 @@ export function readBySearch(req, res) {
     });
 }
 
-// PUT http://localhost:3008/api/v1/customer/:id
+// PUT http://localhost:3008/api/v1/student/:student_id
 export function update(req, res) {
     if (req.body === undefined) {
         res.status(400).send('Undefined Request Body');
@@ -139,7 +139,7 @@ export function update(req, res) {
         return;
     }
 
-    query += ` WHERE id = ${req.params.id}`;
+    query += ` WHERE student_id = ${req.params.student_id}`;
     databaseQuery(req.app.locals.db, query, params, (error, data) => {
         if (error) {
             console.error(error);
@@ -151,15 +151,20 @@ export function update(req, res) {
     });
 }
 
-// DELETE http://localhost:3008/api/v1/customer/:id
+// DELETE http://localhost:3008/api/v1/student/:student_id
 export function remove(req, res) {
-    databaseQuery(req.app.locals.db, `DELETE FROM dim_student WHERE id = ${req.params.id}`, null, (error, data) => {
-        if (error) {
-            console.error(error);
-            res.sendStatus(500);
-            return;
-        }
+    databaseQuery(
+        req.app.locals.db,
+        `DELETE FROM dim_student WHERE student_id = ${req.params.student_id}`,
+        null,
+        (error, data) => {
+            if (error) {
+                console.error(error);
+                res.sendStatus(500);
+                return;
+            }
 
-        res.status(200).send(data);
-    });
+            res.status(200).send(data);
+        }
+    );
 }

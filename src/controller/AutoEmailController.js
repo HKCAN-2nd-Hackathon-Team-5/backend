@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// POST http://localhost:3008/api/v1/email/registration-confirmation/customer-id/:customerId
-export function sendRegistrationConfirmation(req, res) {
+// POST http://localhost:3008/api/v1/email/application-confirmation/student-id/:student_id
+export function sendApplicationConfirmation(req, res) {
     const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: 'sample@gmail.com',

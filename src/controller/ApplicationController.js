@@ -1,21 +1,21 @@
 import databaseQuery from "../utility/DatabaseQuery.js";
 
-// POST http://localhost:3008/api/v1/registration
+// POST http://localhost:3008/api/v1/application
 export function create(req, res) {
-    res.status(200).json({ message: 'Registration created successfully.' });
+    res.status(200).json({ message: 'Application created successfully.' });
 }
 
-// GET http://localhost:3008/api/v1/registration
+// GET http://localhost:3008/api/v1/application
 export function read(req, res) {
-    res.status(200).json({ message: 'Registrations read successfully.' });
+    res.status(200).json({ message: 'Applications read successfully.' });
 }
 
-// PUT http://localhost:3008/api/v1/registration
+// PUT http://localhost:3008/api/v1/application
 export function update(req, res) {
-    res.status(200).json({ message: 'Registration updated successfully.' });
+    res.status(200).json({ message: 'Application updated successfully.' });
 }
 
-// DELETE http://localhost:3008/api/v1/registration
+// DELETE http://localhost:3008/api/v1/application
 export function remove(req, res) {
-    res.status(200).json({ message: 'Registration deleted successfully.' });
+    res.status(200).json({ message: 'Application deleted successfully.' });
 }
