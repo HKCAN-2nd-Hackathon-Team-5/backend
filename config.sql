@@ -142,6 +142,18 @@ CREATE TABLE dim_payment (
 	,last_updated_date	datetime
     );
 	
+--create index to improve performance
+CREATE INDEX index_student ON dim_student (student_id);
+CREATE INDEX index_course ON dim_course (course_id);
+CREATE INDEX index_course_weekday ON dim_course_weekday (course_weekday_id);
+CREATE INDEX index_course_except_date ON dim_course_except_date (course_except_date_id);
+CREATE INDEX index_form ON dim_form (form_id);
+CREATE UNIQUE INDEX index_form_course ON dim_form_course (form_id, course_id);
+CREATE INDEX index_application ON dim_application (application_id);
+CREATE UNIQUE INDEX index_application_course ON dim_application_course (application_id, course_id);
+CREATE INDEX index_payment ON dim_payment (payment_id);
+
+	
 --Test cases created for dim_student table
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST1', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000001, 'test1@test.com');
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST2', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000002, 'test2@test.com');
