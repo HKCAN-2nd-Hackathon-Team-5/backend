@@ -123,6 +123,25 @@ CREATE TABLE dim_application_course (
 	,course_id		int
     ); 
 	
+--generated payment after submission
+CREATE TABLE dim_payment (
+	payment_id 			int IDENTITY(1,1) PRIMARY KEY
+	,student_id			int
+	,form_id			int
+	,invoice			varchar(20)
+	/*,price				decimal(38,6)
+	,used_credit		decimal(38,6) DEFAULT 0
+	,name				nvarchar(100)
+	,email				varchar(100)*/
+	,payment_method		varchar(20)
+	,payment_status		char(1)
+	,paid_date			datetime
+	,created_by			varchar(100)
+	,created_date		datetime
+	,last_updated_by	varchar(100)
+	,last_updated_date	datetime
+    );
+	
 --Test cases created for dim_student table
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST1', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000001, 'test1@test.com');
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST2', 'LAST', 'M','19990131','Address', 'city', 'M2J 0G4', 4370000002, 'test2@test.com');
