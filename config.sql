@@ -84,35 +84,35 @@ CREATE TABLE dim_form_course (
     ); 
 --student application
 CREATE TABLE fct_application (
-	application_id 			int IDENTITY(1,1) PRIMARY KEY
-	,student_id 			int
-	,form_id 				int
-	,lang					varchar(10)
-	,special				nvarchar(255)
-	,parent_name			nvarchar(100)
-	,parent_relation		nvarchar(50)
-	,emergency_name			nvarchar(100)
-	,emergency_relation		nvarchar(50)
-	,emergency_phone_no		bigint
-	,self_leave_name		nvarchar(100)
-	,self_leave_phone_no	bigint
-	,residency_status		nvarchar(50)
-	,residency_origin		nvarchar(50)
-	,residency_stay			decimal(38,6)
-	,ig_username			varchar(30)
-	,add_answers_1			nvarchar(255)
-	,add_answers_2			nvarchar(255)
-	,add_answers_3			nvarchar(255)
-	,add_answers_4			nvarchar(255)
-	,add_answers_5			nvarchar(255)
-	,consent_name			nvarchar(100)
-	,consent_phone_no		bigint
-	,remark					nvarchar(1000)
-	,submit_time			datetime
-	,early_bird_discount	char(1)
-	,ig_discount			char(1)
-	,deduct_credit			decimal(38,6)
-	,price					decimal(38,6)
+	application_id 		     int IDENTITY(1,1) PRIMARY KEY
+	,student_id 		     int
+	,form_id 			     int
+	,lang				     varchar(10)
+	,special			     nvarchar(255)
+	,parent_name		     nvarchar(100)
+	,parent_relation	     nvarchar(50)
+	,emergency_name		     nvarchar(100)
+	,emergency_relation	     nvarchar(50)
+	,emergency_phone_no	     bigint
+	,self_leave_name	     nvarchar(100)
+	,self_leave_phone_no     bigint
+	,residency_status	     nvarchar(50)
+	,residency_origin	     nvarchar(50)
+	,residency_stay		     decimal(38,6)
+	,ig_username		     varchar(30)
+	,add_answers_1		     nvarchar(255)
+	,add_answers_2		     nvarchar(255)
+	,add_answers_3		     nvarchar(255)
+	,add_answers_4		     nvarchar(255)
+	,add_answers_5		     nvarchar(255)
+	,consent_name		     nvarchar(100)
+	,consent_phone_no	     bigint
+	,remark				     nvarchar(1000)
+	,submit_time		     datetime
+	,has_early_bird_discount char(1)
+	,has_ig_discount		 char(1)
+	,deduct_credit			 decimal(38,6)
+	,price					 decimal(38,6)
 	);
 --take which course on the application
 CREATE TABLE dim_application_course (

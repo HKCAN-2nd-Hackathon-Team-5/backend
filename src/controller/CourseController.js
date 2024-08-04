@@ -1,4 +1,3 @@
-import sql from 'mssql';
 import databaseQuery from "../utility/DatabaseQuery.js";
 import * as auth from '../utility/AuthFunc.js';
 
