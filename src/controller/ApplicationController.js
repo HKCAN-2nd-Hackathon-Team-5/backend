@@ -129,6 +129,7 @@ export async function create(req, res) {
                     `Duplicated application with student_id ${student.student_id} and form_id ${req.body.application.form_id}`,
                     req.body
                 ));
+                return;
             }
 
             const { first_name, last_name, dob, ...studentData } = req.body.student;
