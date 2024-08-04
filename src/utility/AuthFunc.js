@@ -24,3 +24,7 @@ export function adminAllow(req) {
     }
 	return 200;
 }
+
+export default function (req, res) {
+	res.sendStatus(adminAllow(req));
+}
