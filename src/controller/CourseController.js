@@ -46,8 +46,38 @@ export async function getAllCourse(req, res) {
 		if (error) {
 			res.status(status).json(error);
 		}
+		let result = {};
+		let courses = [];
+		for (var i = 0; i < data.length; i++) {
+			let course = {
+				"course_id": data[i].course_id,								
+				"course_name": {
+					"en": data[i].course_name_en,
+					"zh_Hant": data[i].course_name_zh_hant,
+					"zh": data[i].course_name_zh
+				},
+				  "tutor_name": data[i].tutor_name,
+				  "venue": data[i].venue,
+				  "start_date": data[i].start_date,
+				  "end_date": data[i].end_date,
+				  "weekday": data[i].weekday,
+				  "except_date": data[i].except_date,
+				  "start_time": data[i].start_time,
+				  "end_time": data[i].end_time,
+				  "capacity": data[i].capacity,
+				  "price": data[i].price,
+				  "age_min": data[i].age_min,
+				  "age_max": data[i].age_max,
+				  "min_attendance": data[i].min_attendance								
+			}
+			courses.push(course);
+		}
+		result = {
+			"courses": courses,
+		};
+		
 
-		res.status(status).json(data);
+		res.status(status).json(result);
 	}
 }	 
 
