@@ -14,7 +14,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-
 databaseConnection(app);
 app.use('/api/v1/*', authentication);
 app.use('/api/v1/userauth', userauth);

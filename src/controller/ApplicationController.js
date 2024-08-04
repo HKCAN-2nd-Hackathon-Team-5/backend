@@ -3,7 +3,7 @@ import constructOutputObject from '../utility/ConstructOutputObject.js';
 // POST http://localhost:3008/api/v1/application
 export async function create(req, res) {
     try {
-        req.body.application.submit_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
 
         let { data, status, error } = await req.app.locals.db
             .from('dim_form')
@@ -24,7 +24,7 @@ export async function create(req, res) {
             return;
         }
 
-        let currentDate = Date.parse(req.body.application.submit_time.slice(0, 10));
+        let currentDate = Date.parse(applicationSuffix.submit_time.slice(0, 10));
 
         if (currentDate < Date.parse(data[0].start_date) || currentDate > Date.parse(data[0].end_date)) {
             res.status(400).json(constructOutputObject(
@@ -35,8 +35,8 @@ export async function create(req, res) {
             return;
         }
 
-        req.body.application.has_early_bird_discount = currentDate <= Date.parse(data[0].early_bird_end_date);
-        req.body.application.has_ig_discount = !!req.body.application.ig_username;
+        applicationSuffix.has_early_bird_discount = currentDate <= Date.parse(data[0].early_bird_end_date);
+        applicationSuffix.has_ig_discount = !!req.body.application.ig_username;
         const earlyBirdDiscount = data[0].early_bird_discount;
         const igDiscount = data[0].ig_discount;
 
@@ -111,6 +111,26 @@ export async function create(req, res) {
             student.student_id = data[0].student_id;
             Object.assign(student, req.body.student);
             student.credit_balance = data[0].credit_balance;
+
+            ({ data, status, error } = await req.app.locals.db
+                .from('fct_application')
+                .select('application_id')
+                .eq('student_id', student.student_id)
+                .eq('form_id', req.body.application.form_id));
+
+            if (error) {
+                res.status(status).json(constructOutputObject(status, error, req.body));
+                return;
+            }
+
+            if (data.length > 0) {
+                res.status(400).json(constructOutputObject(
+                    400,
+                    `Duplicated application with student_id ${student.student_id} and form_id ${req.body.application.form_id}`,
+                    req.body
+                ));
+            }
+
             const { first_name, last_name, dob, ...studentData } = req.body.student;
 
             ({ data, status, error } = await req.app.locals.db
@@ -141,23 +161,25 @@ export async function create(req, res) {
         const { course_ids, ...applicationData } = req.body.application;
         applicationData.student_id = student.student_id;
 
-        if (applicationData.has_early_bird_discount) {
+        if (applicationSuffix.has_early_bird_discount) {
             totalPrice -= earlyBirdDiscount;
         }
 
-        if (applicationData.has_ig_discount) {
+        if (applicationSuffix.has_ig_discount) {
             totalPrice -= igDiscount;
         }
 
         totalPrice = Math.max(totalPrice, 0);
 
         if (totalPrice > student.credit_balance) {
-            applicationData.used_credit = student.credit_balance;
-            applicationData.price = totalPrice - student.credit_balance;
+            applicationSuffix.used_credit = student.credit_balance;
+            applicationSuffix.price = totalPrice - student.credit_balance;
         } else {
-            applicationData.used_credit = totalPrice;
-            applicationData.price = 0;
+            applicationSuffix.used_credit = totalPrice;
+            applicationSuffix.price = 0;
         }
+
+        Object.assign(applicationData, applicationSuffix);
 
         ({ data, status, error } = await req.app.locals.db
             .from('fct_application')
@@ -178,8 +200,7 @@ export async function create(req, res) {
 
         const application = { application_id: data[0].application_id, student_id: student.student_id };
         Object.assign(application, req.body.application);
-        application.used_credit = applicationData.used_credit;
-        application.price = applicationData.price;
+        Object.assign(application, applicationSuffix);
         req.body.student = student;
         req.body.application = application;
         res.status(201).json(constructOutputObject(201, null, req.body));
