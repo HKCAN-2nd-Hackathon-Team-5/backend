@@ -33,7 +33,10 @@ CREATE TABLE dim_course (
 	,age_min             	int
 	,age_max             	int
 	,min_attendance      	int
+	,weekday				int[]
+	,except_date			date[]
     );
+/*
 -- store array weekday for course
 CREATE TABLE dim_course_weekday (
 	course_weekday_id	int IDENTITY(1,1) PRIMARY KEY
@@ -46,6 +49,7 @@ CREATE TABLE dim_course_except_date (
 	,course_id 				int
 	,except_date			date
     ); 	
+*/
 -- application form setup
 CREATE TABLE dim_form (
 	form_id int 				IDENTITY(1,1) PRIMARY KEY
@@ -164,6 +168,7 @@ INSERT INTO dim_course (course_name_en,course_name_zh_hant,course_name_zh,tutor_
 INSERT INTO dim_course (course_name_en,course_name_zh_hant,course_name_zh,tutor_name,venue,start_date,end_date,start_time,end_time,capacity,price,age_min,age_max,min_attendance) VALUES ('COURSE2','課程(繁)2','課程(簡)2','tutor2','CICS room 2','20240812','20240816','10:30:00','12:30:00',20,50,18,null,1);
 
 --Test case created for dim_course_weekday table
+/*
 INSERT INTO dim_course_weekday (course_id, weekday) VALUES (1, 1);
 INSERT INTO dim_course_weekday (course_id, weekday) VALUES (1, 3);
 INSERT INTO dim_course_weekday (course_id, weekday) VALUES (1, 5);
@@ -172,7 +177,7 @@ INSERT INTO dim_course_weekday (course_id, weekday) VALUES (2, 4);
 
 --Test case created for dim_course_except_date table (if having any)
 INSERT INTO dim_course_except_date (course_id, except_date) VALUES (1, '20240814');
-
+*/
 --Test cases created for dim_form table
 INSERT INTO dim_form (title_en,title_zh_hant,title_zh,desc_en,desc_zh_hant,desc_zh,start_date,end_date,is_kid_form,early_bird_end_date,early_bird_discount,ig_discount,add_questions_en_1,add_questions_zh_hant_1,add_questions_zh_1,add_questions_en_2,add_questions_zh_hant_2,add_questions_zh_2,add_questions_en_3,add_questions_zh_hant_3,add_questions_zh_3,add_questions_en_4,add_questions_zh_hant_4,add_questions_zh_4,add_questions_en_5,add_questions_zh_hant_5,add_questions_zh_5) VALUES ('Form Title 1','報名表標題(繁)1','報名表標題(簡)1','Form Content 1','報名表內容(繁)1','報名表內容(簡)1','20240801','20240812','Y','20240810','23','17','Additional Question if any 1?','附加問題如有(繁)1?','附加問題如有(簡)1?','Additional Question if any 2?','附加問題如有(繁)2?','附加問題如有(簡)2?','Additional Question if any 3?','附加問題如有(繁)3?','附加問題如有(簡)3?','Additional Question if any 4?','附加問題如有(繁)4?','附加問題如有(簡)4?','Additional Question if any 5?','附加問題如有(繁)5?','附加問題如有(簡)5?');
 INSERT INTO dim_form (title_en,title_zh_hant,title_zh,desc_en,desc_zh_hant,desc_zh,start_date,end_date,is_kid_form,early_bird_end_date,early_bird_discount,ig_discount,add_questions_en_1,add_questions_zh_hant_1,add_questions_zh_1,add_questions_en_2,add_questions_zh_hant_2,add_questions_zh_2,add_questions_en_3,add_questions_zh_hant_3,add_questions_zh_3,add_questions_en_4,add_questions_zh_hant_4,add_questions_zh_4,add_questions_en_5,add_questions_zh_hant_5,add_questions_zh_5) VALUES ('Form Title 2','報名表標題(繁)2','報名表標題(簡)2','Form Content 2','報名表內容(繁)2','報名表內容(簡)2','20240801','20240812','N','20240810','23','17','Additional Question if any 1?','附加問題如有(繁)1?','附加問題如有(簡)1?','Additional Question if any 2?','附加問題如有(繁)2?','附加問題如有(簡)2?','Additional Question if any 3?','附加問題如有(繁)3?','附加問題如有(簡)3?','Additional Question if any 4?','附加問題如有(繁)4?','附加問題如有(簡)4?','Additional Question if any 5?','附加問題如有(繁)5?','附加問題如有(簡)5?');
