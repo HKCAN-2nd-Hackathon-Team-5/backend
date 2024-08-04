@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors'
 import 'dotenv/config';
 import bodyParser from 'body-parser';
 import databaseConnection from './utility/DatabaseConnection.js';
@@ -10,14 +11,8 @@ import autoEmailRouter from "./router/AutoEmailRouter.js";
 import courseRouter from "./router/CourseRouter.js";
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
 
 
 databaseConnection(app);
