@@ -239,3 +239,65 @@ export function updateCourseByCourseId(req, res) {
 		}
 	}
 }
+
+//INSERT
+export function createCourseByCourseId(req, res) {
+	let status = auth.allAllow(req);
+	if (status!=200) {
+		res.sendStatus(status);
+	} else {
+		if (req.body == undefined) {
+			res.sendStatus(500);
+		} else {
+			const body = req.body;
+			let q = {
+				  text: `INSERT INTO dim_course 
+						(course_name_en
+						,course_name_zh_hant
+						,course_name_zh
+						,tutor_name
+						,venue
+						,start_date
+						,end_date
+						,weekday
+						,except_date
+						,start_time
+						,end_time
+						,capacity
+						,price
+						,age_min
+						,age_max
+						,min_attendance
+						) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING course_id`,
+				  values: [body.course_name.en, body.course_name.zh_Hant, body.course_name.zh, body.tutor_name, body.venue, body.start_date, body.end_date, body.weekday, body.except_date, body.start_time, body.end_time, body.capacity, body.price, body.age_min, body.age_max, body.min_attendance],
+				};
+			dbQuery(q).then((d)=>{
+				console.log(d.rows[0].course_id);
+				req.params.id = d.rows[0].course_id
+				getCourseByCourseId(req, res);
+			});
+		}
+	}
+}
+
+//DELETE
+export function deleteCourseByCourseId(req, res) {
+	let status = auth.allAllow(req);
+	if (status!=200) {
+		res.sendStatus(status);
+	} else {
+		if (req.params.id == undefined) {
+			res.sendStatus(500);
+		} else {
+			let q = {
+				  text: `DELETE FROM dim_course 
+						WHERE course_id=$1`,
+				  values: [req.params.id],
+				};
+			dbQuery(q).then((data)=>{
+				console.log(data);
+				res.status(status).json(data);
+			});
+		}
+	}
+}
