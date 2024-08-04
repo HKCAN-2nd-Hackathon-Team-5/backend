@@ -72,7 +72,7 @@ export async function getCourseByCourseId(req, res) {
 				"course_id": data[i].course_id,								
 				"course_name": {
 					"en": data[i].course_name_en,
-					"zh-Hant": data[i].course_name_zh_hant,
+					"zh_Hant": data[i].course_name_zh_hant,
 					"zh": data[i].course_name_zh
 				},
 				  "tutor_name": data[i].tutor_name,
@@ -127,7 +127,7 @@ export async function getAllCourseByFormId(req, res) {
 						"course_id": data2.rows[i].course_id,								
 						"course_name": {
 							"en": data2.rows[i].course_name_en,
-							"zh-Hant": data2.rows[i].course_name_zh_hant,
+							"zh_Hant": data2.rows[i].course_name_zh_hant,
 							"zh": data2.rows[i].course_name_zh
 						},
 						  "tutor_name": data2.rows[i].tutor_name,
@@ -150,12 +150,12 @@ export async function getAllCourseByFormId(req, res) {
 					"form_id": data.rows[0].form_id,
 					"title": {
 						"en": data.rows[0].title_en,
-						"zh-Hant": data.rows[0].title_zh_hant,
+						"zh_Hant": data.rows[0].title_zh_hant,
 						"zh": data.rows[0].title_zh
 					},
 					"desc": {
 						"en": data.rows[0].desc_en,
-						"zh-Hant": data.rows[0].desc_zh_hant,
+						"zh_Hant": data.rows[0].desc_zh_hant,
 						"zh": data.rows[0].desc_zh
 					},
 					"start_date": data.rows[0].start_date,
@@ -170,27 +170,27 @@ export async function getAllCourseByFormId(req, res) {
 					"add_questions": [
 						{
 							"en": data.rows[0].add_questions_en_1,
-							"zh-Hant": data.rows[0].add_questions_zh_hant_1,
+							"zh_Hant": data.rows[0].add_questions_zh_hant_1,
 							"zh": data.rows[0].add_questions_zh_1
 						},
 						{
 							"en": data.rows[0].add_questions_en_2,
-							"zh-Hant": data.rows[0].add_questions_zh_hant_2,
+							"zh_Hant": data.rows[0].add_questions_zh_hant_2,
 							"zh": data.rows[0].add_questions_zh_2
 						},
 						{
 							"en": data.rows[0].add_questions_en_3,
-							"zh-Hant": data.rows[0].add_questions_zh_hant_3,
+							"zh_Hant": data.rows[0].add_questions_zh_hant_3,
 							"zh": data.rows[0].add_questions_zh_3
 						},
 						{
 							"en": data.rows[0].add_questions_en_4,
-							"zh-Hant": data.rows[0].add_questions_zh_hant_4,
+							"zh_Hant": data.rows[0].add_questions_zh_hant_4,
 							"zh": data.rows[0].add_questions_zh_4
 						},
 						{
 							"en": data.rows[0].add_questions_en_5,
-							"zh-Hant": data.rows[0].add_questions_zh_hant_5,
+							"zh_Hant": data.rows[0].add_questions_zh_hant_5,
 							"zh": data.rows[0].add_questions_zh_5
 						}
 					]		
@@ -202,15 +202,40 @@ export async function getAllCourseByFormId(req, res) {
 }
 
 // UPDATE 
-export function updateCourseByFormId(req, res) {
+export function updateCourseByCourseId(req, res) {
 	let status = auth.allAllow(req);
 	if (status!=200) {
 		res.sendStatus(status);
 	} else {
-		if (req.params.id == undefined) {
+		if (req.body == undefined) {
 			res.sendStatus(500);
 		} else {
-			
+			const body = req.body;
+			let q = {
+				  text: `update dim_course 
+						SET course_name_en=$2
+						,course_name_zh_hant=$3
+						,course_name_zh=$4
+						,tutor_name=$5
+						,venue=$6
+						,start_date=$7
+						,end_date=$8
+						,weekday=$9
+						,except_date=$10
+						,start_time=$11
+						,end_time=$12
+						,capacity=$13
+						,price=$14
+						,age_min=$15
+						,age_max=$16
+						,min_attendance=$17
+						WHERE course_id = $1`,
+				  values: [body.course_id, body.course_name.en, body.course_name.zh_Hant, body.course_name.zh, body.tutor_name, body.venue, body.start_date, body.end_date, body.weekday, body.except_date, body.start_time, body.end_time, body.capacity, body.price, body.age_min, body.age_max, body.min_attendance],
+				};
+			dbQuery(q).then((data)=>{
+				console.log(data);
+				res.status(status).json(data);
+			});
 		}
 	}
 }

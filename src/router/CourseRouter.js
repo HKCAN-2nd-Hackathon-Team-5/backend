@@ -6,5 +6,5 @@ let router = express.Router();
 router.get('/', courseController.getAllCourse);
 router.get('/:id', courseController.getCourseByCourseId);
 router.get('/form/:id', courseController.getAllCourseByFormId);
-router.put('/edit/:id', courseController.updateCourseByFormId);
+router.put('/edit', courseController.updateCourseByCourseId);
 export default router;
