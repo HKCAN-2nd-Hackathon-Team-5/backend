@@ -5,7 +5,6 @@ let router = express.Router();
 
 router.get('/', courseController.getAllCourse);
 router.get('/:id', courseController.getCourseByCourseId);
-router.get('/form/:id', courseController.getAllCourseByFormId);
 router.put('/edit', courseController.updateCourseByCourseId);
 router.post('/create', courseController.createCourseByCourseId);
 router.delete('/delete/:id', courseController.deleteCourseByCourseId);

@@ -9,6 +9,7 @@ import studentRouter from "./router/StudentRouter.js";
 import applicationRouter from "./router/ApplicationRouter.js";
 import autoEmailRouter from "./router/AutoEmailRouter.js";
 import courseRouter from "./router/CourseRouter.js";
+import formRouter from "./router/FormRouter.js";
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,7 @@ app.use('/api/v1/student', studentRouter);
 app.use('/api/v1/application', applicationRouter);
 app.use('/api/v1/email', autoEmailRouter);
 app.use('/api/v1/course', courseRouter);
+app.use('/api/v1/form', formRouter);
 
 const server = app.listen(process.env.PORT, () => {
     const host = server.address().address;
