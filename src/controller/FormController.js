@@ -62,33 +62,33 @@ function getCourseInfo(data) {
 					"discount": data.rows[i].early_bird_discount
 				},
 				"ig_discount": data.rows[i].ig_discount,
-				"add_questions": [
-					{
+				"add_questions": {
+					"q1": {
 						"en": data.rows[i].add_questions_en_1,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_1,
 						"zh": data.rows[i].add_questions_zh_1
 					},
-					{
+					"q2": {
 						"en": data.rows[i].add_questions_en_2,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_2,
 						"zh": data.rows[i].add_questions_zh_2
 					},
-					{
+					"q3": {
 						"en": data.rows[i].add_questions_en_3,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_3,
 						"zh": data.rows[i].add_questions_zh_3
 					},
-					{
+					"q4": {
 						"en": data.rows[i].add_questions_en_4,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_4,
 						"zh": data.rows[i].add_questions_zh_4
 					},
-					{
+					"q5": {
 						"en": data.rows[i].add_questions_en_5,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_5,
 						"zh": data.rows[i].add_questions_zh_5
 					}
-				]
+				}
 			};
 			result.push(form);
 			courses = [];
@@ -197,33 +197,33 @@ export async function getFormByFormId(req, res) {
 						"discount": data.rows[0].early_bird_discount
 					},
 					"ig_discount": data.rows[0].ig_discount,
-					"add_questions": [
-						{
+					"add_questions": {
+						"q1": {
 							"en": data.rows[0].add_questions_en_1,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_1,
 							"zh": data.rows[0].add_questions_zh_1
 						},
-						{
+						"q2": {
 							"en": data.rows[0].add_questions_en_2,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_2,
 							"zh": data.rows[0].add_questions_zh_2
 						},
-						{
+						"q3": {
 							"en": data.rows[0].add_questions_en_3,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_3,
 							"zh": data.rows[0].add_questions_zh_3
 						},
-						{
+						"q4": {
 							"en": data.rows[0].add_questions_en_4,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_4,
 							"zh": data.rows[0].add_questions_zh_4
 						},
-						{
+						"q5": {
 							"en": data.rows[0].add_questions_en_5,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_5,
 							"zh": data.rows[0].add_questions_zh_5
 						}
-					]		
+					}		
 				};
 				res.status(status).json(result);
 			})
@@ -277,7 +277,7 @@ export function updateFormByFormId(req, res) {
 						,add_questions_zh_hant_5=$27
 						,add_questions_zh_5=$28
 						WHERE form_id = $1`,						
-				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions[0].en, body.add_questions[0].zh_Hant, body.add_questions[0].zh, body.add_questions[1].en, body.add_questions[1].zh_Hant, body.add_questions[1].zh, body.add_questions[2].en, body.add_questions[2].zh_Hant, body.add_questions[2].zh, body.add_questions[3].en, body.add_questions[3].zh_Hant, body.add_questions[3].zh, body.add_questions[4].en, body.add_questions[4].zh_Hant, body.add_questions[4].zh],
+				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};
 			let q2 = {
 				  text: `DELETE FROM dim_form_course 
@@ -359,7 +359,7 @@ export function createFormByFormId(req, res) {
 						,add_questions_zh_hant_5
 						,add_questions_zh_5
 						) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27) RETURNING form_id`,
-				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions[0].en, body.add_questions[0].zh_Hant, body.add_questions[0].zh, body.add_questions[1].en, body.add_questions[1].zh_Hant, body.add_questions[1].zh, body.add_questions[2].en, body.add_questions[2].zh_Hant, body.add_questions[2].zh, body.add_questions[3].en, body.add_questions[3].zh_Hant, body.add_questions[3].zh, body.add_questions[4].en, body.add_questions[4].zh_Hant, body.add_questions[4].zh],
+				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};			
 			dbQuery(q1).then((d)=>{
 				req.params.id = d.rows[0].form_id;

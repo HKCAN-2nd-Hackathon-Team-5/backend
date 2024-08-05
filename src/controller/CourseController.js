@@ -134,7 +134,7 @@ export async function getCourseByCourseId(req, res) {
 
 // UPDATE 
 export function updateCourseByCourseId(req, res) {
-	let status = auth.allAllow(req);
+	let status = auth.adminAllow(req);
 	if (status!=200) {
 		res.sendStatus(status);
 	} else {
@@ -176,7 +176,7 @@ export function updateCourseByCourseId(req, res) {
 
 //INSERT
 export function createCourseByCourseId(req, res) {
-	let status = auth.allAllow(req);
+	let status = auth.adminAllow(req);
 	if (status!=200) {
 		res.sendStatus(status);
 	} else {
@@ -219,7 +219,7 @@ export function createCourseByCourseId(req, res) {
 
 //DELETE
 export function deleteCourseByCourseId(req, res) {
-	let status = auth.allAllow(req);
+	let status = auth.adminAllow(req);
 	if (status!=200) {
 		res.sendStatus(status);
 	} else {
