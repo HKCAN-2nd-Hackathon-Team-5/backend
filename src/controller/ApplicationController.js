@@ -159,8 +159,8 @@ export async function create(req, res) {
             student.credit_balance = data[0].credit_balance;
         }
 
-        const { course_ids, ...applicationData } = req.body.application;
-        applicationData.student_id = student.student_id;
+        const applicationData = { student_id: student.student_id };
+        Object.assign(applicationData, req.body.application);
 
         if (applicationSuffix.has_early_bird_discount) {
             totalPrice -= earlyBirdDiscount;
@@ -199,9 +199,8 @@ export async function create(req, res) {
             return;
         }
 
-        const application = { application_id: data[0].application_id, student_id: student.student_id };
-        Object.assign(application, req.body.application);
-        Object.assign(application, applicationSuffix);
+        const application = { application_id: data[0].application_id };
+        Object.assign(application, applicationData);
         req.body.student = student;
         req.body.application = application;
         res.status(201).json(constructOutputObject(201, null, req.body));
