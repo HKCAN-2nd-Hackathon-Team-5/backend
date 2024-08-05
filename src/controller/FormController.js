@@ -420,7 +420,7 @@ export function unassignCourseToForm(req, res) {
 		if (req.params.id == undefined || req.params.courseid == undefined) {
 			res.sendStatus(500);
 		} else {
-			let q1 = {
+			let q = {
 				  text: `DELETE FROM dim_form_course 
 						WHERE form_id=$1 
 						AND course_id=$2`,
