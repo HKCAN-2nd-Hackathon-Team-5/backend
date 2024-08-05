@@ -121,6 +121,9 @@ export async function getAllForm(req, res) {
 				
 		dbQuery(q1).then((data)=>{
 			res.status(status).json(getCourseInfo(data));
+		})
+		.catch((error)=> {
+			res.status(500).json(error);
 		});
 	}
 }	 
@@ -223,7 +226,13 @@ export async function getFormByFormId(req, res) {
 					]		
 				};
 				res.status(status).json(result);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
+		})
+		.catch((error)=> {
+			res.status(500).json(error);
 		});		
 	}
 }
@@ -293,9 +302,18 @@ export function updateFormByFormId(req, res) {
 						dbQuery(q3).then((data3)=> {
 							console.log(data);
 							res.status(status).json(data);
+						})
+						.catch((error)=> {
+							res.status(500).json(error);
 						});
 					}
+				})
+				.catch((error)=> {
+					res.status(500).json(error);
 				});
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -360,9 +378,15 @@ export function createFormByFormId(req, res) {
 					dbQuery(q2).then((d2)=> {
 						console.log(d2);
 						getFormByFormId(req, res);
+					})
+					.catch((error)=> {
+						res.status(500).json(error);
 					});
 				}
-			});
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
+			});;
 		}
 	}
 }
@@ -389,7 +413,13 @@ export function deleteFormByFormId(req, res) {
 			dbQuery(q1).then((data)=>{
 				dbQuery(q2).then((data2)=>{
 					res.status(status).json(data);
+				})
+				.catch((error)=> {
+					res.status(500).json(error);
 				});
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -413,6 +443,9 @@ export function assignCourseToForm(req, res) {
 				};
 			dbQuery(q).then((data)=>{
 				res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -436,6 +469,9 @@ export function unassignCourseToForm(req, res) {
 				};
 			dbQuery(q).then((data)=>{
 					res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}

@@ -95,6 +95,10 @@ export async function getCourseByCourseId(req, res) {
 			.select()
 			.eq('course_id',req.params.id);
 		
+		if (error) {
+			res.status(status).json(error);
+		}
+		
 		let result = {};
 		let courses = [];
 		for (var i = 0; i < data.length; i++) {
@@ -162,6 +166,9 @@ export function updateCourseByCourseId(req, res) {
 			dbQuery(q).then((data)=>{
 				console.log(data);
 				res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -202,6 +209,9 @@ export function createCourseByCourseId(req, res) {
 				console.log(d.rows[0].course_id);
 				req.params.id = d.rows[0].course_id
 				getCourseByCourseId(req, res);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -224,7 +234,23 @@ export function deleteCourseByCourseId(req, res) {
 			dbQuery(q).then((data)=>{
 				console.log(data);
 				res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
 }
+
+
+
+
+//Get participant list (paid)-> insert to dim_participant_list (student_id, course_id)
+/*select * from dim_student s
+inner join dim_form f on (f.student_id=s.student_id)
+inner join dim_form_course fc on (f.form_id=fc.form_id)
+inner join dim_course c on (fc.course_id=c.course_id)
+inner join dim_payment p on (p.
+where c.course_id={}
+;
+*/
