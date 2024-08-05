@@ -76,7 +76,7 @@ export async function update(req, res) {
 
 // DELETE http://localhost:3008/api/v1/student/:student_id
 export async function remove(req, res) {
-    const { data, status, error } = await req.app.locals.db
+    const { status, error } = await req.app.locals.db
         .from('dim_student')
         .delete()
         .eq('student_id', req.params.student_id);
