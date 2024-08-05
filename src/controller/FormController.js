@@ -284,13 +284,17 @@ export function updateFormByFormId(req, res) {
 						let course = {form_id: body.form_id, course_id: courses[i].course_id};
 						coursesToInsert.push(course);
 					}
-					let q3 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
-								coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
-								
-					dbQuery(q3).then((data3)=> {
-						console.log(data);
+					if (courses.length == 0) {
 						res.status(status).json(data);
-					});
+					} else {
+						let q3 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
+									coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
+									
+						dbQuery(q3).then((data3)=> {
+							console.log(data);
+							res.status(status).json(data);
+						});
+					}
 				});
 			});
 		}
@@ -342,18 +346,22 @@ export function createFormByFormId(req, res) {
 			dbQuery(q1).then((d)=>{
 				req.params.id = d.rows[0].form_id;
 				let courses = body.courses;
-				let coursesToInsert = [];
-				for (var i=0;i<courses.length;i++) {
-					let course = {form_id: d.rows[0].form_id, course_id: courses[i].course_id};
-					coursesToInsert.push(course);
-				}
-				let q2 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
-								coursesToInsert.map((course)=>[course.form_id, course.course_id]));
-								
-				dbQuery(q2).then((d2)=> {
-					console.log(d2);
+				if (courses.length==0) {
 					getFormByFormId(req, res);
-				});
+				} else {						
+					let coursesToInsert = [];
+					for (var i=0;i<courses.length;i++) {
+						let course = {form_id: d.rows[0].form_id, course_id: courses[i].course_id};
+						coursesToInsert.push(course);
+					}
+					let q2 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
+									coursesToInsert.map((course)=>[course.form_id, course.course_id]));
+									
+					dbQuery(q2).then((d2)=> {
+						console.log(d2);
+						getFormByFormId(req, res);
+					});
+				}
 			});
 		}
 	}
