@@ -154,7 +154,10 @@ CREATE INDEX index_application ON fct_application (application_id);
 CREATE UNIQUE INDEX index_application_course ON dim_application_course (application_id, course_id);
 CREATE INDEX index_payment ON fct_payment (payment_id);
 
-	
+ALTER TABLE dim_form_course
+  DROP CONSTRAINT IF EXISTS fc_constraint
+, ADD CONSTRAINT fc_constraint UNIQUE NULLS NOT DISTINCT (form_id, course_id);
+
 --Test cases created for dim_student table
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST1', 'LAST', 'M','19990131','Address', 'city', 'M2J0G4', 4370000001, 'test1@test.com');
 INSERT INTO dim_student (first_name, last_name, gender, dob, address, city, postal_code, phone_no, email) VALUES ('FIRST2', 'LAST', 'M','19990131','Address', 'city', 'M2J0G4', 4370000002, 'test2@test.com');

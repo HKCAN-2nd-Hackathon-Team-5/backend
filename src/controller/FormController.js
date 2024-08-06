@@ -279,38 +279,38 @@ export function updateFormByFormId(req, res) {
 						WHERE form_id = $1`,						
 				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};
-			let q2 = {
-				  text: `DELETE FROM dim_form_course 
-						WHERE form_id=$1`,
-				  values: [body.form_id],
-				};
-				
 			dbQuery(q1).then((data)=>{
-				dbQuery(q2).then((data2)=> {
-					let courses = body.courses;
-					let coursesToInsert = [];
-					for (var i=0;i<courses.length;i++) {
-						let course = {form_id: body.form_id, course_id: courses[i].course_id};
-						coursesToInsert.push(course);
-					}
-					if (courses.length == 0) {
-						res.status(status).json(data);
-					} else {
-						let q3 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
-									coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
-									
-						dbQuery(q3).then((data3)=> {
-							console.log(data);
+				let courses = body.courses;
+				let coursesToInsert = [];
+				let coursesToDelete = [];
+				for (var i=0;i<courses.length;i++) {
+					let course = {form_id: body.form_id, course_id: courses[i].course_id};
+					coursesToInsert.push(course);
+					coursesToDelete.push(courses[i].course_id);
+				}
+				if (courses.length == 0) {
+					res.status(status).json(data);
+				} else {
+					let q2 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES %L
+									on conflict (form_id ,course_id) do nothing`, 
+								coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
+								
+					dbQuery(q2).then((data2)=> {
+						let q3 = format(`DELETE FROM dim_form_course 
+										where form_id=%L 
+										AND course_id not in (%L)`,
+								body.form_id, coursesToDelete);
+							dbQuery(q3).then((data3)=> {
 							res.status(status).json(data);
 						})
 						.catch((error)=> {
 							res.status(500).json(error);
 						});
-					}
-				})
-				.catch((error)=> {
-					res.status(500).json(error);
-				});
+					})
+					.catch((error)=> {
+						res.status(500).json(error);
+					});
+				}
 			})
 			.catch((error)=> {
 				res.status(500).json(error);
