@@ -253,31 +253,22 @@ export async function readApplications(req, res) {
         return;
     }
 
-    if (req.params.application_id === undefined) {
-        const { data, status, error } = await req.app.locals.db
-            .from('fct_application')
-            .select();
+    let query = req.app.locals.db
+        .from('fct_application')
+        .select();
 
-        if (error) {
-            res.status(status).json(constructOutputObject(status, error, null));
-            return;
-        }
-
-        res.status(status).json(constructOutputObject(status, null, { applications: data }));
-        return;
+    if (req.params.application_id !== undefined) {
+        query = query.eq('application_id', req.params.application_id);
     }
 
-    const { data, status, error } = await req.app.locals.db
-        .from('fct_application')
-        .select()
-        .eq('application_id', req.params.application_id);
+    let { data, status, error } = await query;
 
     if (error) {
         res.status(status).json(constructOutputObject(status, error, null));
         return;
     }
 
-    if (data.length === 0) {
+    if (req.params.application_id !== undefined && data.length === 0) {
         res.status(404).json(constructOutputObject(
             404,
             `Application with id ${req.params.application_id} not found`,
@@ -286,7 +277,34 @@ export async function readApplications(req, res) {
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
+    const applications = data;
+
+    for (let i = 0; i < applications.length; i++) {
+        const application = { application_id: applications[i].application_id };
+
+        ({ data } = await req.app.locals.db
+            .from('dim_student')
+            .select()
+            .eq('student_id', applications[i].student_id));
+
+        application.student = data.length !== 0 ? data[0] : null;
+
+        ({ data } = await req.app.locals.db
+            .from('dim_form')
+            .select()
+            .eq('form_id', applications[i].form_id));
+
+        application.form = data.length !== 0 ? data[0] : null;
+        const { application_id, student_id, form_id, ...applicationSuffix } = applications[i];
+        Object.assign(application, applicationSuffix);
+        applications[i] = application;
+    }
+
+    if (req.params.application_id !== undefined) {
+        res.status(status).json(constructOutputObject(status, null, { application: applications[0] }));
+    } else {
+        res.status(status).json(constructOutputObject(status, null, { applications: applications }));
+    }
 }
 
 // PUT http://localhost:3008/api/v1/application/:application_id
