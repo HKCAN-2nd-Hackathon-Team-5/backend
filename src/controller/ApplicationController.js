@@ -1,13 +1,28 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 
 // POST http://localhost:3008/api/v1/application
-export async function create(req, res) {
+export async function createApplication(req, res) {
     try {
         const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
+        let formTitle;
+
+        switch (req.body.application.lang.toLowerCase()) {
+            case 'en':
+                formTitle = 'title_en';
+                break;
+            case 'zh-hant':
+            case 'zh_hant':
+                formTitle = 'title_zh_hant';
+                break;
+            case 'zh':
+                formTitle = 'title_zh';
+                break;
+        }
 
         let { data, status, error } = await req.app.locals.db
             .from('dim_form')
-            .select('start_date, end_date, early_bird_end_date, early_bird_discount, ig_discount')
+            .select(`${formTitle}, start_date, end_date, early_bird_end_date, early_bird_discount, ig_discount`)
             .eq('form_id', req.body.application.form_id);
 
         if (error) {
@@ -24,6 +39,7 @@ export async function create(req, res) {
             return;
         }
 
+        formTitle = data[0][formTitle];
         let currentDate = Date.parse(applicationSuffix.submit_time.slice(0, 10));
 
         if (currentDate < Date.parse(data[0].start_date) || currentDate > Date.parse(data[0].end_date)) {
@@ -203,6 +219,16 @@ export async function create(req, res) {
         Object.assign(application, applicationData);
         req.body.student = student;
         req.body.application = application;
+
+        autoEmailHelper.sendApplicationConfirm(student, formTitle, (error, info) => {
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            console.log(info.response);
+        })
+
         res.status(201).json(constructOutputObject(201, null, req.body));
     } catch (error) {
         res.status(400).json(constructOutputObject(400, error.message, req.body));
@@ -210,16 +236,56 @@ export async function create(req, res) {
 }
 
 // GET http://localhost:3008/api/v1/application
-export function read(req, res) {
-    res.status(200).json({ message: 'Applications read successfully.' });
+// GET http://localhost:3008/api/v1/application/:application_id
+export async function readApplications(req, res) {
+    if (req.params.application_id === undefined) {
+        const { data, status, error } = await req.app.locals.db
+            .from('fct_application')
+            .select();
+
+        if (error) {
+            res.status(status).json(constructOutputObject(status, error, null));
+            return;
+        }
+
+        res.status(status).json(constructOutputObject(status, null, { applications: data }));
+        return;
+    }
+
+    const { data, status, error } = await req.app.locals.db
+        .from('fct_application')
+        .select()
+        .eq('application_id', req.params.application_id);
+
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, null));
+        return;
+    }
+
+    if (data.length === 0) {
+        res.status(404).json(constructOutputObject(
+            404,
+            `Application with id ${req.params.application_id} not found`,
+            null
+        ));
+        return;
+    }
+
+    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
 }
 
-// PUT http://localhost:3008/api/v1/application
-export function update(req, res) {
-    res.status(200).json({ message: 'Application updated successfully.' });
-}
+// PUT http://localhost:3008/api/v1/application/:application_id
+export async function updateApplication(req, res) {
+    const { data, status, error } = await req.app.locals.db
+        .from('fct_application')
+        .update(req.body)
+        .eq('application_id', req.params.application_id)
+        .select();
 
-// DELETE http://localhost:3008/api/v1/application
-export function remove(req, res) {
-    res.status(200).json({ message: 'Application deleted successfully.' });
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, req.body));
+        return;
+    }
+
+    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
 }
