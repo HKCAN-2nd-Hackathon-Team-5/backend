@@ -1,6 +1,7 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
 import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 import * as auth from '../utility/AuthFunc.js';
+import * as dateStringBuilder from '../utility/DateStringBuilder.js';
 
 // POST http://localhost:3008/api/v1/application
 export async function createApplication(req, res) {
@@ -255,13 +256,13 @@ export async function readApplications(req, res) {
 
     let query = req.app.locals.db
         .from('fct_application')
-        .select();
+        .select('*, dim_student!inner(*), dim_form!inner(*)');
 
     if (req.params.application_id !== undefined) {
         query = query.eq('application_id', req.params.application_id);
     }
 
-    let { data, status, error } = await query;
+    const { data, status, error } = await query;
 
     if (error) {
         res.status(status).json(constructOutputObject(status, error, null));
@@ -277,33 +278,105 @@ export async function readApplications(req, res) {
         return;
     }
 
-    const applications = data;
-
-    for (let i = 0; i < applications.length; i++) {
-        const application = { application_id: applications[i].application_id };
-
-        ({ data } = await req.app.locals.db
-            .from('dim_student')
-            .select()
-            .eq('student_id', applications[i].student_id));
-
-        application.student = data.length !== 0 ? data[0] : null;
-
-        ({ data } = await req.app.locals.db
-            .from('dim_form')
-            .select()
-            .eq('form_id', applications[i].form_id));
-
-        application.form = data.length !== 0 ? data[0] : null;
-        const { application_id, student_id, form_id, ...applicationSuffix } = applications[i];
-        Object.assign(application, applicationSuffix);
-        applications[i] = application;
+    for (let i = 0; i < data.length; i++) {
+        data[i] = {
+            application_id: data[i].application_id,
+            student: {
+                student_id: data[i].student_id,
+                first_name: data[i].dim_student.first_name,
+                last_name: data[i].dim_student.last_name,
+                gender: data[i].dim_student.gender,
+                dob: data[i].dim_student.dob,
+                address: data[i].dim_student.address,
+                city: data[i].dim_student.city,
+                postal_code: data[i].dim_student.postal_code,
+                phone_no: data[i].dim_student.phone_no,
+                email: data[i].dim_student.email,
+                credit_balance: data[i].dim_student.credit_balance
+            },
+            form: {
+                form_id: data[i].form_id,
+                title: {
+                    en: data[i].dim_form.title_en,
+                    zh_Hant: data[i].dim_form.title_zh_hant,
+                    zh: data[i].dim_form.title_zh
+                },
+                desc: {
+                    en: data[i].dim_form.desc_en,
+                    zh_Hant: data[i].dim_form.desc_zh_hant,
+                    zh: data[i].dim_form.desc_zh
+                },
+                start_date: data[i].dim_form.start_date,
+                end_date: data[i].dim_form.end_date,
+                courses: data[i].dim_form.courses,
+                is_kid_form: data[i].dim_form.is_kid_form,
+                early_bird: {
+                    end_date: data[i].dim_form.early_bird_end_date,
+                    discount: data[i].dim_form.early_bird_discount
+                },
+                ig_discount: data[i].dim_form.ig_discount,
+                add_questions: {
+                    q1: {
+                        en: data[i].dim_form.add_questions_en_1,
+                        zh_Hant: data[i].dim_form.add_questions_zh_hant_1,
+                        zh: data[i].dim_form.add_questions_zh_1
+                    },
+                    q2: {
+                        en: data[i].dim_form.add_questions_en_2,
+                        zh_Hant: data[i].dim_form.add_questions_zh_hant_2,
+                        zh: data[i].dim_form.add_questions_zh_2
+                    },
+                    q3: {
+                        en: data[i].dim_form.add_questions_en_3,
+                        zh_Hant: data[i].dim_form.add_questions_zh_hant_3,
+                        zh: data[i].dim_form.add_questions_zh_3
+                    },
+                    q4: {
+                        en: data[i].dim_form.add_questions_en_4,
+                        zh_Hant: data[i].dim_form.add_questions_zh_hant_4,
+                        zh: data[i].dim_form.add_questions_zh_4
+                    },
+                    q5: {
+                        en: data[i].dim_form.add_questions_en_5,
+                        zh_Hant: data[i].dim_form.add_questions_zh_hant_5,
+                        zh: data[i].dim_form.add_questions_zh_5
+                    }
+                }
+            },
+            course_ids: data[i].course_ids,
+            lang: data[i].lang,
+            special: data[i].special,
+            parent_name: data[i].parent_name,
+            parent_relation: data[i].parent_relation,
+            emergency_name: data[i].emergency_name,
+            emergency_relation: data[i].emergency_relation,
+            emergency_phone_no: data[i].emergency_phone_no,
+            self_leave_name: data[i].self_leave_name,
+            self_leave_phone_no: data[i].self_leave_phone_no,
+            residency_status: data[i].residency_status,
+            residency_origin: data[i].residency_origin,
+            residency_stay: data[i].residency_stay,
+            ig_username: data[i].ig_username,
+            add_answers_1: data[i].add_answers_1,
+            add_answers_2: data[i].add_answers_2,
+            add_answers_3: data[i].add_answers_3,
+            add_answers_4: data[i].add_answers_4,
+            add_answers_5: data[i].add_answers_5,
+            consent_name: data[i].consent_name,
+            consent_phone_no: data[i].consent_phone_no,
+            remark: data[i].remark,
+            submit_time: data[i].submit_time,
+            has_early_bird_discount: data[i].has_early_bird_discount,
+            has_ig_discount: data[i].has_ig_discount,
+            used_credit: data[i].used_credit,
+            price: data[i].price
+        }
     }
 
     if (req.params.application_id !== undefined) {
-        res.status(status).json(constructOutputObject(status, null, { application: applications[0] }));
+        res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
     } else {
-        res.status(status).json(constructOutputObject(status, null, { applications: applications }));
+        res.status(status).json(constructOutputObject(status, null, { applications: data }));
     }
 }
 
