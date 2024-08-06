@@ -1,13 +1,27 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 
 // POST http://localhost:3008/api/v1/application
 export async function createApplication(req, res) {
     try {
         const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
+        let formTitle;
+
+        switch (req.body.application.lang) {
+            case 'en':
+                formTitle = 'title_en';
+                break;
+            case 'zh-Hant':
+                formTitle = 'title_zh_hant';
+                break;
+            case 'zh':
+                formTitle = 'title_zh';
+                break;
+        }
 
         let { data, status, error } = await req.app.locals.db
             .from('dim_form')
-            .select('start_date, end_date, early_bird_end_date, early_bird_discount, ig_discount')
+            .select(`${formTitle}, start_date, end_date, early_bird_end_date, early_bird_discount, ig_discount`)
             .eq('form_id', req.body.application.form_id);
 
         if (error) {
@@ -24,6 +38,7 @@ export async function createApplication(req, res) {
             return;
         }
 
+        formTitle = data[0][formTitle];
         let currentDate = Date.parse(applicationSuffix.submit_time.slice(0, 10));
 
         if (currentDate < Date.parse(data[0].start_date) || currentDate > Date.parse(data[0].end_date)) {
@@ -203,6 +218,16 @@ export async function createApplication(req, res) {
         Object.assign(application, applicationData);
         req.body.student = student;
         req.body.application = application;
+
+        autoEmailHelper.sendApplicationConfirm(student, formTitle, (error, info) => {
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            console.log(info.response);
+        })
+
         res.status(201).json(constructOutputObject(201, null, req.body));
     } catch (error) {
         res.status(400).json(constructOutputObject(400, error.message, req.body));
