@@ -1,8 +1,26 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
 
+// POST http://localhost:3008/api/v1/student
+export async function createStudent(req, res) {
+    const { data, status, error } = await req.app.locals.db
+        .from('dim_student')
+        .insert(req.body)
+        .select('student_id, credit_balance');
+
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, req.body));
+        return;
+    }
+
+    const student = { student_id: data[0].student_id };
+    Object.assign(student, req.body);
+    student.credit_balance = data[0].credit_balance;
+    res.status(status).json(constructOutputObject(status, null, { student: student }));
+}
+
 // GET http://localhost:3008/api/v1/student
 // GET http://localhost:3008/api/v1/student/:student_id
-export async function read(req, res) {
+export async function readStudents(req, res) {
     if (req.params.student_id === undefined) {
         const { data, status, error } = await req.app.locals.db
             .from('dim_student')
@@ -28,7 +46,7 @@ export async function read(req, res) {
     }
 
     if (data.length === 0) {
-        res.status(404).json(constructOutputObject(status, `Student with id ${req.params.student_id} not found`, null));
+        res.status(404).json(constructOutputObject(404, `Student with id ${req.params.student_id} not found`, null));
         return;
     }
 
@@ -36,7 +54,7 @@ export async function read(req, res) {
 }
 
 // GET http://localhost:3008/api/v1/student/query
-export async function readBySearch(req, res) {
+export async function readStudentsBySearch(req, res) {
     const fields = ['first_name', 'last_name', 'gender', 'address', 'city', 'postal_code', 'email'];
     let query = req.app.locals.db.from('dim_student').select();
 
@@ -58,8 +76,23 @@ export async function readBySearch(req, res) {
     res.status(status).json(constructOutputObject(status, null, { students: data }));
 }
 
+// GET http://localhost:3008/api/v1/student/:student_id/application
+export async function readApplicationsByStudentId(req, res) {
+    const { data, status, error } = await req.app.locals.db
+        .from('fct_application')
+        .select()
+        .eq('student_id', req.params.student_id);
+
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, null));
+        return;
+    }
+
+    res.status(status).json(constructOutputObject(status, null, { applications: data }));
+}
+
 // PUT http://localhost:3008/api/v1/student/:student_id
-export async function update(req, res) {
+export async function updateStudent(req, res) {
     const { data, status, error } = await req.app.locals.db
         .from('dim_student')
         .update(req.body)
@@ -67,7 +100,7 @@ export async function update(req, res) {
         .select();
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(constructOutputObject(status, error, req.body));
         return;
     }
 
@@ -75,7 +108,7 @@ export async function update(req, res) {
 }
 
 // DELETE http://localhost:3008/api/v1/student/:student_id
-export async function remove(req, res) {
+export async function deleteStudent(req, res) {
     const { status, error } = await req.app.locals.db
         .from('dim_student')
         .delete()

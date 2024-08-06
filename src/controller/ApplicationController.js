@@ -1,7 +1,7 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
 
 // POST http://localhost:3008/api/v1/application
-export async function create(req, res) {
+export async function createApplication(req, res) {
     try {
         const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
 
@@ -210,16 +210,56 @@ export async function create(req, res) {
 }
 
 // GET http://localhost:3008/api/v1/application
-export function read(req, res) {
-    res.status(200).json({ message: 'Applications read successfully.' });
+// GET http://localhost:3008/api/v1/application/:application_id
+export async function readApplications(req, res) {
+    if (req.params.application_id === undefined) {
+        const { data, status, error } = await req.app.locals.db
+            .from('fct_application')
+            .select();
+
+        if (error) {
+            res.status(status).json(constructOutputObject(status, error, null));
+            return;
+        }
+
+        res.status(status).json(constructOutputObject(status, null, { applications: data }));
+        return;
+    }
+
+    const { data, status, error } = await req.app.locals.db
+        .from('fct_application')
+        .select()
+        .eq('application_id', req.params.application_id);
+
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, null));
+        return;
+    }
+
+    if (data.length === 0) {
+        res.status(404).json(constructOutputObject(
+            404,
+            `Application with id ${req.params.application_id} not found`,
+            null
+        ));
+        return;
+    }
+
+    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
 }
 
-// PUT http://localhost:3008/api/v1/application
-export function update(req, res) {
-    res.status(200).json({ message: 'Application updated successfully.' });
-}
+// PUT http://localhost:3008/api/v1/application/:application_id
+export async function updateApplication(req, res) {
+    const { data, status, error } = await req.app.locals.db
+        .from('fct_application')
+        .update(req.body)
+        .eq('application_id', req.params.application_id)
+        .select();
 
-// DELETE http://localhost:3008/api/v1/application
-export function remove(req, res) {
-    res.status(200).json({ message: 'Application deleted successfully.' });
+    if (error) {
+        res.status(status).json(constructOutputObject(status, error, req.body));
+        return;
+    }
+
+    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
 }

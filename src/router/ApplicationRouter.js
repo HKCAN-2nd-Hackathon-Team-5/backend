@@ -2,8 +2,7 @@ import express from 'express';
 import * as applicationController from '../controller/ApplicationController.js';
 
 let router = express.Router();
-router.post('/', applicationController.create);
-router.get('/', applicationController.read);
-router.put('/', applicationController.update);
-router.delete('/', applicationController.remove);
+router.post('/', applicationController.createApplication);
+router.get('/', applicationController.readApplications);
+router.put('/', applicationController.updateApplication);
 export default router;

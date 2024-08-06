@@ -10,4 +10,5 @@ router.post('/create', formController.createFormByFormId);
 router.delete('/delete/:id', formController.deleteFormByFormId);
 router.post('/assign/:id/:courseid', formController.assignCourseToForm);
 router.delete('/unassign/:id/:courseid', formController.unassignCourseToForm);
+router.get('/:form_id/application', formController.readApplicationsByFormId);
 export default router;

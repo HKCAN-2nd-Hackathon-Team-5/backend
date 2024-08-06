@@ -1,6 +1,7 @@
 import * as auth from '../utility/AuthFunc.js';
 import pg from 'pg'
 import format from 'pg-format';
+import constructOutputObject from '../utility/ConstructOutputObject.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
  
@@ -439,4 +440,19 @@ export function unassignCourseToForm(req, res) {
 			});
 		}
 	}
+}
+
+// GET http://localhost:3008/api/v1/form/:form_id/application
+export async function readApplicationsByFormId(req, res) {
+	const { data, status, error } = await req.app.locals.db
+		.from('fct_application')
+		.select()
+		.eq('form_id', req.params.form_id);
+
+	if (error) {
+		res.status(status).json(constructOutputObject(status, error, null));
+		return;
+	}
+
+	res.status(status).json(constructOutputObject(status, null, { applications: data }));
 }
