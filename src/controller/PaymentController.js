@@ -4,7 +4,9 @@ import format from 'pg-format';
 import fetch from 'node-fetch'
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
- 
+const paypalUrl = process.env.PAYPAL_URL;
+const paypalUsername = process.env.PAYPAL_USERNAME;
+const paypalPassword = process.env.PAYPAL_PASSWORD;
 
 export async function dbQuery(query){
 	const pool = new Pool({
@@ -16,11 +18,9 @@ export async function dbQuery(query){
 }
 
 async function authorization() {
-	var username = 'AUN6WOgoxL8tQpH35Di_RjjHVudjq8nlYi5UKSdJ8LqfLpmvxS9YMRUX77381a3TZV0KyRupphQzbxe0';
-	var password = 'EMpaXP8s8mG8N22mFUVo_fXL-vTmQ8hFLwhsJEj49_nnUuDyH2R_oiO7j9uxFhHT6yliv6q0sQgYrbGk';
-	var auth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
+	var auth = 'Basic ' + Buffer.from(paypalUsername + ':' + paypalPassword).toString('base64');
 
-	const response = await fetch('https://api-m.sandbox.paypal.com/v1/oauth2/token', {
+	const response = await fetch(paypalUrl+'/v1/oauth2/token', {
 		method: 'POST',
 		headers: {
 			'Authorization': auth,
@@ -34,7 +34,7 @@ async function authorization() {
 
 async function getInvoiceNo(auth) {
 	if (auth!=undefined) {
-		const response = await fetch('https://api-m.sandbox.paypal.com/v2/invoicing/generate-next-invoice-number', {
+		const response = await fetch(paypalUrl+'/v2/invoicing/generate-next-invoice-number', {
 		method: 'POST',
 			headers: {
 				'Authorization': 'Bearer ' +auth.access_token,
@@ -51,7 +51,7 @@ async function getInvoiceNo(auth) {
 async function draftInvoice(auth, payment) {
 	console.log(auth+" " +payment);
 	if (auth!=undefined) {
-		const response = await fetch('https://api-m.sandbox.paypal.com/v2/invoicing/invoices', {
+		const response = await fetch(paypalUrl+'/v2/invoicing/invoices', {
 			method: 'POST',
 			headers: {
 				'Authorization': 'Bearer ' +auth.access_token,
@@ -137,13 +137,31 @@ async function draftInvoice(auth, payment) {
 	}
 }
 
-export async function createInvoice(req, res) {
-	
-	
+async function sendInvoice(auth, invoiceNo) {
+	console.log("sendInvoice" + auth.access_token + ","+invoiceNo);
+	if (auth!=undefined && invoiceNo!=undefined) {
+		console.log("sendInvoice" + auth + invoiceNo);
+		const response = await fetch(paypalUrl+'/v2/invoicing/invoices/'+invoiceNo+'/send', {
+			method: 'POST',
+			headers: {
+				'Authorization': 'Bearer '+auth.access_token,
+				'Content-Type': 'application/json',
+				'PayPal-Request-Id': 'b1d1f06c7246c'
+			},
+			body: JSON.stringify({ "send_to_invoicer": true })
+		});
+		const result = await response.json();
+		return result;
+	} else {
+		return "INVALID authorization";
+	}
+}
+
+export async function createInvoice(req, res) {	
 	const { data, status, error } = await req.app.locals.db
 			.from('dim_course')
 			.select()
-			.eq('course_id',req.body.course_ids);
+			.in('course_id',req.body.course_ids);
 		
 	if (error) {
 		res.status(status).json(error);
@@ -151,13 +169,13 @@ export async function createInvoice(req, res) {
 	
 	let courses = [];
 	for (var i = 0; i < data.length; i++) {
-		const courseName = "";
-		if (lang == "zh") {
-			courseName = data[i].course_name_en;
-		} else if (lang == "zh_hant") {
+		let courseName = "";
+		if (req.body.lang == "zh") {
+			courseName = data[i].course_name_zh;
+		} else if (req.body.lang == "zh_hant") {
 			courseName = data[i].course_name_zh_hant;
 		} else {
-			courseName = data[i].course_name_zh;
+			courseName = data[i].course_name_en;
 		}
 		let course = {
 			"name": courseName,
@@ -191,16 +209,22 @@ export async function createInvoice(req, res) {
 		
 	await authorization()
 	.then((auth)=>{
-		console.log("getNewInvoiceNo" + auth);
-		draftInvoice(auth, payment)})
-	.then((json)=>{
-		console.log("testdraftInvoice: " + json);
-		res.status(200).json(json);
+		console.log("draft invoice with payment_id" + payment.payment_id);
+		draftInvoice(auth, payment)
+		.then((json)=>{
+			console.log("send invoice with id: " + json.id);
+			sendInvoice(auth, json.id);
+			res.status(200).json(json);
+		})
+		.catch((error)=> {
+			res.status(500).json(error);
+		});
 	})
 	.catch((error)=> {
 		res.status(500).json(error);
 	});
 }
+
 
 async function generateInvoiceNo() {
 	var invoice = null;
