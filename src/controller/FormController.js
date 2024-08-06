@@ -2,6 +2,7 @@ import * as auth from '../utility/AuthFunc.js';
 import pg from 'pg'
 import format from 'pg-format';
 import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as dateStringBuilder from '../utility/DateStringBuilder.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
  
@@ -28,10 +29,10 @@ function getCourseInfo(data) {
 			},
 			  "tutor_name": data.rows[i].tutor_name,
 			  "venue": data.rows[i].venue,
-			  "start_date": data.rows[i].start_date,
-			  "end_date": data.rows[i].end_date,
+			  "start_date": dateStringBuilder.trimTime(data.rows[i].start_date),
+			  "end_date": dateStringBuilder.trimTime(data.rows[i].end_date),
 			  "weekday": data.rows[i].weekday,
-			  "except_date": data.rows[i].except_date,
+			  "except_date": dateStringBuilder.trimTime(data.rows[i].except_date),
 			  "start_time": data.rows[i].start_time,
 			  "end_time": data.rows[i].end_time,
 			  "capacity": data.rows[i].capacity,
@@ -54,12 +55,12 @@ function getCourseInfo(data) {
 					"zh_Hant": data.rows[i].desc_zh_hant,
 					"zh": data.rows[i].desc_zh
 				},
-				"start_date": data.rows[i].start_date,
-				"end_date": data.rows[i].end_date,
+				"start_date": dateStringBuilder.trimTime(data.rows[i].start_date),
+				"end_date": dateStringBuilder.trimTime(data.rows[i].end_date),
 				"courses": courses,
 				"is_kid_form": data.rows[i].is_kid_form,
 				"early_bird": {
-					"end_date": data.rows[i].early_bird_end_date,
+					"end_date": dateStringBuilder.trimTime(data.rows[i].early_bird_end_date),
 					"discount": data.rows[i].early_bird_discount
 				},
 				"ig_discount": data.rows[i].ig_discount,
@@ -163,10 +164,10 @@ export async function getFormByFormId(req, res) {
 						},
 						  "tutor_name": data2.rows[i].tutor_name,
 						  "venue": data2.rows[i].venue,
-						  "start_date": data2.rows[i].start_date,
-						  "end_date": data2.rows[i].end_date,
+						  "start_date": dateStringBuilder.trimTime(data2.rows[i].start_date),
+						  "end_date": dateStringBuilder.trimTime(data2.rows[i].end_date),
 						  "weekday": data2.rows[i].weekday,
-						  "except_date": data2.rows[i].except_date,
+						  "except_date": dateStringBuilder.trimTime(data2.rows[i].except_date),
 						  "start_time": data2.rows[i].start_time,
 						  "end_time": data2.rows[i].end_time,
 						  "capacity": data2.rows[i].capacity,
@@ -189,12 +190,12 @@ export async function getFormByFormId(req, res) {
 						"zh_Hant": data.rows[0].desc_zh_hant,
 						"zh": data.rows[0].desc_zh
 					},
-					"start_date": data.rows[0].start_date,
-					"end_date": data.rows[0].end_date,
+					"start_date": dateStringBuilder.trimTime(data.rows[0].start_date),
+					"end_date": dateStringBuilder.trimTime(data.rows[0].end_date),
 					"courses": courses,
 					"is_kid_form": data.rows[0].is_kid_form,
 					"early_bird": {
-						"end_date": data.rows[0].early_bird_end_date,
+						"end_date": dateStringBuilder.trimTime(data.rows[0].early_bird_end_date),
 						"discount": data.rows[0].early_bird_discount
 					},
 					"ig_discount": data.rows[0].ig_discount,
