@@ -7,11 +7,12 @@ export async function createApplication(req, res) {
         const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
         let formTitle;
 
-        switch (req.body.application.lang) {
+        switch (req.body.application.lang.toLowerCase()) {
             case 'en':
                 formTitle = 'title_en';
                 break;
-            case 'zh-Hant':
+            case 'zh-hant':
+            case 'zh_hant':
                 formTitle = 'title_zh_hant';
                 break;
             case 'zh':
