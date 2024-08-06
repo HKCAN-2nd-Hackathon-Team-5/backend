@@ -63,33 +63,33 @@ function getCourseInfo(data) {
 					"discount": data.rows[i].early_bird_discount
 				},
 				"ig_discount": data.rows[i].ig_discount,
-				"add_questions": [
-					{
+				"add_questions": {
+					"q1": {
 						"en": data.rows[i].add_questions_en_1,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_1,
 						"zh": data.rows[i].add_questions_zh_1
 					},
-					{
+					"q2": {
 						"en": data.rows[i].add_questions_en_2,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_2,
 						"zh": data.rows[i].add_questions_zh_2
 					},
-					{
+					"q3": {
 						"en": data.rows[i].add_questions_en_3,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_3,
 						"zh": data.rows[i].add_questions_zh_3
 					},
-					{
+					"q4": {
 						"en": data.rows[i].add_questions_en_4,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_4,
 						"zh": data.rows[i].add_questions_zh_4
 					},
-					{
+					"q5": {
 						"en": data.rows[i].add_questions_en_5,
 						"zh_Hant": data.rows[i].add_questions_zh_hant_5,
 						"zh": data.rows[i].add_questions_zh_5
 					}
-				]
+				}
 			};
 			result.push(form);
 			courses = [];
@@ -122,6 +122,9 @@ export async function getAllForm(req, res) {
 				
 		dbQuery(q1).then((data)=>{
 			res.status(status).json(getCourseInfo(data));
+		})
+		.catch((error)=> {
+			res.status(500).json(error);
 		});
 	}
 }	 
@@ -195,36 +198,42 @@ export async function getFormByFormId(req, res) {
 						"discount": data.rows[0].early_bird_discount
 					},
 					"ig_discount": data.rows[0].ig_discount,
-					"add_questions": [
-						{
+					"add_questions": {
+						"q1": {
 							"en": data.rows[0].add_questions_en_1,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_1,
 							"zh": data.rows[0].add_questions_zh_1
 						},
-						{
+						"q2": {
 							"en": data.rows[0].add_questions_en_2,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_2,
 							"zh": data.rows[0].add_questions_zh_2
 						},
-						{
+						"q3": {
 							"en": data.rows[0].add_questions_en_3,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_3,
 							"zh": data.rows[0].add_questions_zh_3
 						},
-						{
+						"q4": {
 							"en": data.rows[0].add_questions_en_4,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_4,
 							"zh": data.rows[0].add_questions_zh_4
 						},
-						{
+						"q5": {
 							"en": data.rows[0].add_questions_en_5,
 							"zh_Hant": data.rows[0].add_questions_zh_hant_5,
 							"zh": data.rows[0].add_questions_zh_5
 						}
-					]		
+					}		
 				};
 				res.status(status).json(result);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
+		})
+		.catch((error)=> {
+			res.status(500).json(error);
 		});		
 	}
 }
@@ -269,34 +278,43 @@ export function updateFormByFormId(req, res) {
 						,add_questions_zh_hant_5=$27
 						,add_questions_zh_5=$28
 						WHERE form_id = $1`,						
-				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions[0].en, body.add_questions[0].zh_Hant, body.add_questions[0].zh, body.add_questions[1].en, body.add_questions[1].zh_Hant, body.add_questions[1].zh, body.add_questions[2].en, body.add_questions[2].zh_Hant, body.add_questions[2].zh, body.add_questions[3].en, body.add_questions[3].zh_Hant, body.add_questions[3].zh, body.add_questions[4].en, body.add_questions[4].zh_Hant, body.add_questions[4].zh],
+				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};
-			let q2 = {
-				  text: `DELETE FROM dim_form_course 
-						WHERE form_id=$1`,
-				  values: [body.form_id],
-				};
-				
 			dbQuery(q1).then((data)=>{
-				dbQuery(q2).then((data2)=> {
-					let courses = body.courses;
-					let coursesToInsert = [];
-					for (var i=0;i<courses.length;i++) {
-						let course = {form_id: body.form_id, course_id: courses[i].course_id};
-						coursesToInsert.push(course);
-					}
-					if (courses.length == 0) {
-						res.status(status).json(data);
-					} else {
-						let q3 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES  %L`, 
-									coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
-									
-						dbQuery(q3).then((data3)=> {
-							console.log(data);
+				let courses = body.courses;
+				let coursesToInsert = [];
+				let coursesToDelete = [];
+				for (var i=0;i<courses.length;i++) {
+					let course = {form_id: body.form_id, course_id: courses[i].course_id};
+					coursesToInsert.push(course);
+					coursesToDelete.push(courses[i].course_id);
+				}
+				if (courses.length == 0) {
+					res.status(status).json(data);
+				} else {
+					let q2 = format(`INSERT INTO dim_form_course (form_id ,course_id) VALUES %L
+									on conflict (form_id ,course_id) do nothing`, 
+								coursesToInsert.map((course)=>[course.form_id, course.course_id]));	
+								
+					dbQuery(q2).then((data2)=> {
+						let q3 = format(`DELETE FROM dim_form_course 
+										where form_id=%L 
+										AND course_id not in (%L)`,
+								body.form_id, coursesToDelete);
+							dbQuery(q3).then((data3)=> {
 							res.status(status).json(data);
+						})
+						.catch((error)=> {
+							res.status(500).json(error);
 						});
-					}
-				});
+					})
+					.catch((error)=> {
+						res.status(500).json(error);
+					});
+				}
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -342,7 +360,7 @@ export function createFormByFormId(req, res) {
 						,add_questions_zh_hant_5
 						,add_questions_zh_5
 						) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27) RETURNING form_id`,
-				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions[0].en, body.add_questions[0].zh_Hant, body.add_questions[0].zh, body.add_questions[1].en, body.add_questions[1].zh_Hant, body.add_questions[1].zh, body.add_questions[2].en, body.add_questions[2].zh_Hant, body.add_questions[2].zh, body.add_questions[3].en, body.add_questions[3].zh_Hant, body.add_questions[3].zh, body.add_questions[4].en, body.add_questions[4].zh_Hant, body.add_questions[4].zh],
+				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};			
 			dbQuery(q1).then((d)=>{
 				req.params.id = d.rows[0].form_id;
@@ -361,9 +379,15 @@ export function createFormByFormId(req, res) {
 					dbQuery(q2).then((d2)=> {
 						console.log(d2);
 						getFormByFormId(req, res);
+					})
+					.catch((error)=> {
+						res.status(500).json(error);
 					});
 				}
-			});
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
+			});;
 		}
 	}
 }
@@ -390,7 +414,13 @@ export function deleteFormByFormId(req, res) {
 			dbQuery(q1).then((data)=>{
 				dbQuery(q2).then((data2)=>{
 					res.status(status).json(data);
+				})
+				.catch((error)=> {
+					res.status(500).json(error);
 				});
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -414,6 +444,9 @@ export function assignCourseToForm(req, res) {
 				};
 			dbQuery(q).then((data)=>{
 				res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
@@ -437,6 +470,9 @@ export function unassignCourseToForm(req, res) {
 				};
 			dbQuery(q).then((data)=>{
 					res.status(status).json(data);
+			})
+			.catch((error)=> {
+				res.status(500).json(error);
 			});
 		}
 	}
