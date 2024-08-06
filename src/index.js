@@ -16,7 +16,6 @@ app.use(cors());
 app.use(bodyParser.json());
 
 databaseConnection(app);
-app.use('/api/v1/*', authentication);
 app.use('/api/v1/userauth', userauth);
 app.use('/api/v1/student', studentRouter);
 app.use('/api/v1/application', applicationRouter);

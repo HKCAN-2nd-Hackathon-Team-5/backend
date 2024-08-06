@@ -480,6 +480,13 @@ export function unassignCourseToForm(req, res) {
 
 // GET http://localhost:3008/api/v1/form/:form_id/application
 export async function readApplicationsByFormId(req, res) {
+	const authStatus = auth.adminAllow(req);
+
+	if (authStatus !== 200) {
+		res.sendStatus(authStatus);
+		return;
+	}
+
 	const { data, status, error } = await req.app.locals.db
 		.from('fct_application')
 		.select()

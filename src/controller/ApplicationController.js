@@ -1,9 +1,17 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
 import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
+import * as auth from '../utility/AuthFunc.js';
 
 // POST http://localhost:3008/api/v1/application
 export async function createApplication(req, res) {
     try {
+        const authStatus = auth.allAllow(req);
+
+        if (authStatus !== 200) {
+            res.sendStatus(authStatus);
+            return;
+        }
+
         const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
         let formTitle;
 
@@ -238,6 +246,13 @@ export async function createApplication(req, res) {
 // GET http://localhost:3008/api/v1/application
 // GET http://localhost:3008/api/v1/application/:application_id
 export async function readApplications(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     if (req.params.application_id === undefined) {
         const { data, status, error } = await req.app.locals.db
             .from('fct_application')
@@ -276,6 +291,13 @@ export async function readApplications(req, res) {
 
 // PUT http://localhost:3008/api/v1/application/:application_id
 export async function updateApplication(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const { data, status, error } = await req.app.locals.db
         .from('fct_application')
         .update(req.body)

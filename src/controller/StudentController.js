@@ -1,7 +1,15 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as auth from '../utility/AuthFunc.js';
 
 // POST http://localhost:3008/api/v1/student
 export async function createStudent(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const { data, status, error } = await req.app.locals.db
         .from('dim_student')
         .insert(req.body)
@@ -21,6 +29,13 @@ export async function createStudent(req, res) {
 // GET http://localhost:3008/api/v1/student
 // GET http://localhost:3008/api/v1/student/:student_id
 export async function readStudents(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     if (req.params.student_id === undefined) {
         const { data, status, error } = await req.app.locals.db
             .from('dim_student')
@@ -55,6 +70,13 @@ export async function readStudents(req, res) {
 
 // GET http://localhost:3008/api/v1/student/query
 export async function readStudentsBySearch(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const fields = ['first_name', 'last_name', 'gender', 'address', 'city', 'postal_code', 'email'];
     let query = req.app.locals.db.from('dim_student').select();
 
@@ -78,6 +100,13 @@ export async function readStudentsBySearch(req, res) {
 
 // GET http://localhost:3008/api/v1/student/:student_id/application
 export async function readApplicationsByStudentId(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const { data, status, error } = await req.app.locals.db
         .from('fct_application')
         .select()
@@ -93,6 +122,13 @@ export async function readApplicationsByStudentId(req, res) {
 
 // PUT http://localhost:3008/api/v1/student/:student_id
 export async function updateStudent(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const { data, status, error } = await req.app.locals.db
         .from('dim_student')
         .update(req.body)
@@ -109,6 +145,13 @@ export async function updateStudent(req, res) {
 
 // DELETE http://localhost:3008/api/v1/student/:student_id
 export async function deleteStudent(req, res) {
+    const authStatus = auth.adminAllow(req);
+
+    if (authStatus !== 200) {
+        res.sendStatus(authStatus);
+        return;
+    }
+
     const { status, error } = await req.app.locals.db
         .from('dim_student')
         .delete()
