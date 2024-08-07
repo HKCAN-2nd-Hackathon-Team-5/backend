@@ -29,8 +29,8 @@ function getCourseInfo(data) {
 			},
 			  "tutor_name": data.rows[i].tutor_name,
 			  "venue": data.rows[i].venue,
-			  "start_date": dateStringBuilder.trimTime(data.rows[i].start_date),
-			  "end_date": dateStringBuilder.trimTime(data.rows[i].end_date),
+			  "start_date": dateStringBuilder.trimTime(data.rows[i].cstart_date),
+			  "end_date": dateStringBuilder.trimTime(data.rows[i].cend_date),
 			  "weekday": data.rows[i].weekday,
 			  "except_date": dateStringBuilder.trimTime(data.rows[i].except_date),
 			  "start_time": data.rows[i].start_time,
@@ -114,7 +114,18 @@ export async function getAllForm(req, res) {
 		}
 */		
 		let q1 = {
-				  text: `select * from dim_form f
+				  text: `select f.form_id, f.title_en, f.title_zh_hant, f.title_zh, f.desc_en, f.desc_zh_hant, f.desc_zh, 
+						f.start_date start_date, f.end_date end_date, f.is_kid_form, 
+						f.early_bird_end_date, f.early_bird_discount, f.ig_discount, 
+						f.add_questions_en_1, f.add_questions_zh_hant_1, f.add_questions_zh_1, 
+						f.add_questions_en_2, f.add_questions_zh_hant_2, f.add_questions_zh_2,
+						f.add_questions_en_3, f.add_questions_zh_hant_3, f.add_questions_zh_3,
+						f.add_questions_en_4, f.add_questions_zh_hant_4, f.add_questions_zh_4,
+						f.add_questions_en_5, f.add_questions_zh_hant_5, f.add_questions_zh_5,
+						c.course_id, c.course_name_en, c.course_name_zh_hant, c.course_name_zh,
+						tutor_name, venue, c.start_date cstart_date, c.end_date cend_date,
+						c.weekday, c.except_date,  c.start_time, c.end_time, c.capacity, c.price, c.age_min, c.age_max, c.min_attendance
+						from dim_form f
 						inner join dim_form_course fc on (f.form_id=fc.form_id)
 						inner join dim_course c on (c.course_id=fc.course_id)
 						order by f.form_id`,
