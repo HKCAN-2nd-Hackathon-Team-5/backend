@@ -1,7 +1,7 @@
 import * as auth from '../utility/AuthFunc.js';
 import pg from 'pg'
 import format from 'pg-format';
-import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
 import * as dateStringBuilder from '../utility/DateStringBuilder.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
@@ -509,9 +509,9 @@ export async function readApplicationsByFormId(req, res) {
 		.eq('form_id', req.params.form_id);
 
 	if (error) {
-		res.status(status).json(constructOutputObject(status, error, null));
+		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
 		return;
 	}
 
-	res.status(status).json(constructOutputObject(status, null, { applications: data }));
+	res.status(status).json(outputObjectBuilder.prependStatus(status, null, { applications: data }));
 }

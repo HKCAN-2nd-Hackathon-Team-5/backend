@@ -1,4 +1,4 @@
-﻿export default function (status, error, body) {
+﻿export function prependStatus(status, error, body) {
     const output = {
         status: status,
         msg: status >= 200 && status < 300 ? 'Success' : 'Failed',
