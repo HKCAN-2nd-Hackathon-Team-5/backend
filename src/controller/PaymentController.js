@@ -122,7 +122,7 @@ async function draftInvoice(auth, payment) {
 					"invoice_discount": {
 					  "amount": {
 						  "currency_code": "CAD",
-						  "value": payment.discount
+						  "value": payment.discount+payment.used_credit
 					  }
 					}
 				  }
@@ -197,7 +197,8 @@ function formatInvoice(invoice) {
 		"email": invoice.rows[0].email,
 		"phone_no": invoice.rows[0].phone_no,
 		"courses": courses,
-		"discount": invoice.rows[0].discount
+		"discount": invoice.rows[0].discount,
+		"used_credit": invoice.rows[0].used_credit
 	};
 	return payment;
 }
@@ -334,7 +335,8 @@ export async function createPayment(req, res) {
 					let q2 = {
 						text: `select a.application_id, a.student_id, a.form_id, a.course_ids, a.price, a.used_credit, 
 						(case when a.has_early_bird_discount then f.early_bird_discount else 0 end) + 
-						(case when a.has_ig_discount then f.ig_discount else 0 end) discount,
+						(case when a.has_ig_discount then f.ig_discount else 0 end) +
+						(case when a.has_return_discount then f.return_discount else 0 end) discount,
 							s.first_name, s.last_name, s.email, s.address, s.city, s.postal_code, s.phone_no,
 							p.payment_id, p.invoice_no, to_char(p.invoice_date,'YYYY-MM-DD') invoice_date, 
 							to_char(p.invoice_due_date,'YYYY-MM-DD') invoice_due_date,
