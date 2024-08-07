@@ -124,7 +124,7 @@ async function draftInvoice(auth, payment) {
 					"invoice_discount": {
 					  "amount": {
 						  "currency_code": "CAD",
-						  "value": payment.discount+payment.used_credit
+						  "value": +payment.discount + +payment.used_credit
 					  }
 					}
 				  }
@@ -173,7 +173,9 @@ async function getInvoiceDetails(auth, payments) {
 			}
 		});
 		const json = await response.json();
-		details.push({ payment_id: payment.payment_id, status: json.status });
+		details.push({ payment_id: payment.payment_id, 
+						status: json.status, 
+						data: json});
 	}
 
 	return details;
@@ -352,9 +354,10 @@ export async function createPayment(req, res) {
 								,last_updated_date
 								,invoice_due_date
 								,paypal_send
-								) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) 
+								,payment_status
+								) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) 
 								RETURNING payment_id`,
-						values: [invoiceNo, req.params.applicationid, new Date(), 'Admin', new Date(), 'Admin', new Date(), null, 'N'],
+						values: [invoiceNo, req.params.applicationid, new Date(), 'Admin', new Date(), 'Admin', new Date(), null, 'N', 'INITIAL'],
 						};
 					let q2 = {
 						text: `select a.application_id, a.student_id, a.form_id, a.course_ids, a.price, a.used_credit, 
@@ -384,10 +387,11 @@ export async function createPayment(req, res) {
 											set paypal_send = $2
 											,paypal_id = $3
 											,last_updated_by = $4
-											,last_updated_date =$5
+											,last_updated_date = $5
+											,payment_status = $6
 											where application_id=$1 
 											RETURNING paypal_id`,
-									values: [req.params.applicationid, 'P', paypal, 'Admin', new Date()],
+									values: [req.params.applicationid, 'P', paypal, 'Admin', new Date(), 'DRAFT'],
 								};
 								dbQuery(q3).then(()=>{
 									//sent Invoice
@@ -398,9 +402,10 @@ export async function createPayment(req, res) {
 													set paypal_send = $2
 													,last_updated_by = $3
 													,last_updated_date =$4
+													,payment_status = $5
 													where application_id=$1
 													RETURNING payment_id`,
-											values: [req.params.applicationid, 'Y', 'Admin', new Date()],
+											values: [req.params.applicationid, 'Y', 'Admin', new Date(), 'SENT'],
 										};
 										dbQuery(q4).then((payment)=>{
 											req.params.id = payment.rows[0].payment_id;
@@ -476,7 +481,7 @@ export async function checkInvoices(req, res) {
 	let { data, status, error } = await req.app.locals.db
 		.from('fct_payment')
 		.select('payment_id, paypal_id')
-		.filter('payment_status', 'not.is', true);
+		.in('payment_status', ['SENT','UNPAID']);
 
 	if (error) {
 		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
@@ -495,9 +500,24 @@ export async function checkInvoices(req, res) {
 			details.forEach(detail => {
 				if (detail.status === 'PAID' || detail.status === 'MARKED_AS_PAID') {
 					paidPaymentIds.push(detail.payment_id);
-					payments.push({ payment_id: detail.payment_id, payment_status: true });
+					payments.push({ payment_id: detail.payment_id, payment_status: 'PAID' });
+					
+					let q = {
+						text: `update fct_payment
+								set payment_method = $2
+								,last_updated_by = $3
+								,last_updated_date = $4
+								,payment_status = $5
+								,paid_date = $6
+								where payment_id=$1 `,
+						values: [detail.payment_id, detail.data.payments.transactions[0].method, 'Admin', new Date(), 'PAID', detail.data.payments.transactions[0].payment_date],
+					};
+					dbQuery(q).catch((error)=>{
+						isCheckFailed = true;
+						res.status(500).json(outputObjectBuilder.prependStatus(500, error.message, null));
+					});
 				} else {
-					payments.push({ payment_id: detail.payment_id, payment_status: false });
+					payments.push({ payment_id: detail.payment_id, payment_status: 'SENT' });
 				}
 			});
 		})
@@ -509,11 +529,10 @@ export async function checkInvoices(req, res) {
 	if (isCheckFailed) {
 		return;
 	}
+	
 
 	({ data, status, error } = await req.app.locals.db
 		.from('fct_payment')
-		.update({ payment_status: true })
-		.eq('payment_id', paidPaymentIds)
 		.select(`
 			fct_application(
 				dim_student(student_id, first_name, email, credit_balance),
@@ -521,7 +540,8 @@ export async function checkInvoices(req, res) {
 				lang,
 				used_credit
 			)
-		`));
+		`)
+		.in('payment_id', paidPaymentIds));
 
 	if (error) {
 		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
