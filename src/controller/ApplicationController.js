@@ -39,7 +39,8 @@ export async function createApplication(req, res) {
                 ig_discount,
                 return_discount
             `)
-            .eq('form_id', req.body.application.form_id);
+            .eq('form_id', req.body.application.form_id)
+            .limit(1);
 
         if (error) {
             res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -130,7 +131,8 @@ export async function createApplication(req, res) {
             .select('student_id, credit_balance')
             .eq('first_name', req.body.student.first_name)
             .eq('last_name', req.body.student.last_name)
-            .eq('dob', req.body.student.dob));
+            .eq('dob', req.body.student.dob)
+            .limit(1));
 
         if (error) {
             res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -148,7 +150,8 @@ export async function createApplication(req, res) {
                 .from('fct_application')
                 .select('application_id')
                 .eq('student_id', student.student_id)
-                .eq('form_id', req.body.application.form_id));
+                .eq('form_id', req.body.application.form_id)
+                .limit(1));
 
             if (error) {
                 res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -180,7 +183,8 @@ export async function createApplication(req, res) {
                 .from('fct_payment')
                 .select('payment_id, fct_application!inner()')
                 .eq('fct_application.student_id', student.student_id)
-                .eq('payment_status', true));
+                .eq('payment_status', true)
+                .limit(1));
 
             if (error) {
                 res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -277,7 +281,9 @@ export async function readApplications(req, res) {
         .select('*, dim_student!inner(*), dim_form!inner(*)');
 
     if (req.params.application_id !== undefined) {
-        query = query.eq('application_id', req.params.application_id);
+        query = query
+            .eq('application_id', req.params.application_id)
+            .limit(1);
     }
 
     const { data, status, error } = await query;

@@ -53,7 +53,8 @@ export async function readStudents(req, res) {
     const { data, status, error } = await req.app.locals.db
         .from('dim_student')
         .select()
-        .eq('student_id', req.params.student_id);
+        .eq('student_id', req.params.student_id)
+        .limit(1);
 
     if (error) {
         res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
