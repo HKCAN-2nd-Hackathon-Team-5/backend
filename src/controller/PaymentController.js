@@ -3,6 +3,7 @@ import pg from 'pg'
 import format from 'pg-format';
 import fetch from 'node-fetch'
 import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
+import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
 const paypalUrl = process.env.PAYPAL_URL;
@@ -509,14 +510,62 @@ export async function checkInvoices(req, res) {
 		return;
 	}
 
-	({ status, error } = await req.app.locals.db
+	({ data, status, error } = await req.app.locals.db
 		.from('fct_payment')
-		.update('payment_status', true)
-		.in('payment_id', paidPaymentIds));
+		.update({ payment_status: true })
+		.eq('payment_id', paidPaymentIds)
+		.select(`
+			fct_application(
+				dim_student(student_id, first_name, email, credit_balance),
+				form_id,
+				lang,
+				used_credit
+			)
+		`));
 
 	if (error) {
 		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
 		return;
+	}
+
+	const paymentData = data;
+
+	for (let i = 0; i < paymentData.length; i++) {
+		const application = paymentData[i].fct_application;
+
+		await req.app.locals.db
+			.from('dim_student')
+			.update({ credit_balance: application.dim_student.credit_balance - application.used_credit })
+			.eq('student_id', application.dim_student.student_id);
+
+		let formTitle;
+
+		switch (application.lang.toLowerCase()) {
+			case 'en':
+				formTitle = 'title_en';
+				break;
+			case 'zh-hant':
+			case 'zh_hant':
+				formTitle = 'title_zh_hant';
+				break;
+			case 'zh':
+				formTitle = 'title_zh';
+				break;
+		}
+
+		({ data } = await req.app.locals.db
+			.from('dim_form')
+			.select(formTitle)
+			.eq('form_id', application.form_id));
+
+		autoEmailHelper.sendEnrollConfirm(application.dim_student, data[0][formTitle], (error, info) => {
+			if (error) {
+				console.error(error);
+				return;
+			}
+
+			console.log(info.response);
+		});
 	}
 
 	res.status(200).json(outputObjectBuilder.prependStatus(200, null, { payments: payments }));

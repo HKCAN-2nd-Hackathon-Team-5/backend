@@ -22,3 +22,16 @@ export function sendApplicationConfirm(student, formTitle, callback) {
         callback(error, info);
     });
 }
+
+export function sendEnrollConfirm(student, formTitle, callback) {
+    const mailOptions = {
+        from: process.env.EMAIL_USERNAME,
+        to: student.email,
+        subject: `Thank you for enrolling in ${formTitle}`,
+        text: `Hi ${student.first_name},\n\nYour payment has been received.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        callback(error, info);
+    });
+}

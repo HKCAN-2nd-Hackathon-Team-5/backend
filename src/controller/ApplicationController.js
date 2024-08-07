@@ -254,7 +254,7 @@ export async function createApplication(req, res) {
             }
 
             console.log(info.response);
-        })
+        });
 
         res.status(201).json(outputObjectBuilder.prependStatus(201, null, req.body));
     } catch (error) {
