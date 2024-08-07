@@ -49,7 +49,7 @@ async function getInvoiceNo(auth) {
 }
 
 async function draftInvoice(auth, payment) {
-	console.log(auth+" " +payment);
+	console.log(JSON.stringify(auth)+" " +JSON.stringify(payment));
 	if (auth!=undefined) {
 		const response = await fetch(paypalUrl+'/v2/invoicing/invoices', {
 			method: 'POST',
@@ -68,8 +68,8 @@ async function draftInvoice(auth, payment) {
 				"term": "Course Fees are non-refundable. However if the minimum number of participants are not reached, we will cancel the course and issue a full refund.\nLocation: Welcome Centre Immigrant Services, 7220 Kennedy Road, Unit 8, Markham, L3R",
 				"memo": "",
 				"payment_term": {
-				  "term_type": "DUE_ON_DATE_SPECIFIED",	//NET_10: 10 days, NO_DUE_DATE, DUE_ON_DATE_SPECIFIED
-				  "due_date": payment.invoice_due_date
+				  "term_type": "NO_DUE_DATE"//,	//NET_10: 10 days, NO_DUE_DATE, DUE_ON_DATE_SPECIFIED
+				 // "due_date": payment.invoice_due_date
 				}
 			  },
 			  "invoicer": {
@@ -108,7 +108,7 @@ async function draftInvoice(auth, payment) {
 					"phones": [
 					  {
 						"country_code": "001",
-						"national_number": payment.phone,
+						"national_number": payment.phone_no,
 						"phone_type": "MOBILE"
 					  }
 					]
@@ -130,18 +130,17 @@ async function draftInvoice(auth, payment) {
 			  }
 			})
 		});
-		const result = await response.json();
+		const result = await response.json();		
 		return result;
 	} else {
 		return "INVALID authorization";
 	}
 }
 
-async function sendInvoice(auth, invoiceNo) {
-	console.log("sendInvoice" + auth.access_token + ","+invoiceNo);
-	if (auth!=undefined && invoiceNo!=undefined) {
-		console.log("sendInvoice" + auth + invoiceNo);
-		const response = await fetch(paypalUrl+'/v2/invoicing/invoices/'+invoiceNo+'/send', {
+async function sendInvoice2(auth, paypalId) {
+	console.log("sendInvoice2: "+paypalId);
+	if (auth!=undefined && paypalId!=undefined) {
+		const response = await fetch(paypalUrl+'/v2/invoicing/invoices/'+paypalId+'/send', {
 			method: 'POST',
 			headers: {
 				'Authorization': 'Bearer '+auth.access_token,
@@ -153,78 +152,70 @@ async function sendInvoice(auth, invoiceNo) {
 		const result = await response.json();
 		return result;
 	} else {
-		return "INVALID authorization";
+		return "Missing paypalId";
 	}
 }
+async function sendInvoice(paypalId) {
+	await authorization()
+	.then((auth)=>{
+		console.log("sendInvoice with paypal_id" + paypalId);
+		sendInvoice2(auth, paypalId)})
+	.then((json)=>{
+		return json;
+	})
+	.catch(()=> {
+		return "500";
+	});
+}
 
-export async function createInvoice(req, res) {	
-	const { data, status, error } = await req.app.locals.db
-			.from('dim_course')
-			.select()
-			.in('course_id',req.body.course_ids);
-		
-	if (error) {
-		res.status(status).json(error);
-	}
-	
+function formatInvoice(invoice) {
 	let courses = [];
-	for (var i = 0; i < data.length; i++) {
-		let courseName = "";
-		if (req.body.lang == "zh") {
-			courseName = data[i].course_name_zh;
-		} else if (req.body.lang == "zh_hant") {
-			courseName = data[i].course_name_zh_hant;
-		} else {
-			courseName = data[i].course_name_en;
-		}
+	for (var i = 0; i < invoice.rows.length; i++) {
 		let course = {
-			"name": courseName,
+			"name": invoice.rows[i].course_name,
 			"description": "",
 			"quantity": "1",
 			"unit_amount": {
 				"currency_code": "CAD",
-				"value": data[i].price
+				"value": invoice.rows[i].price
 			},
 			"unit_of_measure": "QUANTITY"
 		}		
 		courses.push(course);
-	}	
+	}
 	
 	let payment = {
-			"invoice_no": req.body.invoice_no,
-			"payment_id": req.body.payment_id,
-			"invoice_date": "2024-08-06",
-			"invoice_due_date": "2024-09-06",
-			"first_name": req.body.first_name,
-			"last_name": req.body.last_name,
-			"address": req.body.address,
-			"city": req.body.city,
-			"postal_code": req.body.postal_code,
-			"email": req.body.email,
-			"phone": req.body.phone,
-			"lang": req.body.lang,
-			"courses": courses,
-			"discount": req.body.discount
-		};
-		
-	await authorization()
-	.then((auth)=>{
-		console.log("draft invoice with payment_id" + payment.payment_id);
-		draftInvoice(auth, payment)
-		.then((json)=>{
-			console.log("send invoice with id: " + json.id);
-			sendInvoice(auth, json.id);
-			res.status(200).json(json);
-		})
-		.catch((error)=> {
-			res.status(500).json(error);
-		});
-	})
-	.catch((error)=> {
-		res.status(500).json(error);
-	});
+		"invoice_no": invoice.rows[0].invoice_no,
+		"payment_id": invoice.rows[0].payment_id,
+		"invoice_date": invoice.rows[0].invoice_date,
+		"invoice_due_date": invoice.rows[0].invoice_due_date,
+		"first_name": invoice.rows[0].first_name,
+		"last_name": invoice.rows[0].last_name,
+		"address": invoice.rows[0].address,
+		"city": invoice.rows[0].city,
+		"postal_code": invoice.rows[0].postal_code,
+		"email": invoice.rows[0].email,
+		"phone_no": invoice.rows[0].phone_no,
+		"courses": courses,
+		"discount": invoice.rows[0].discount
+	};
+	return payment;
 }
 
+async function createInvoice(invoice) {
+	
+	var result = null;
+	await authorization()
+	.then((auth)=>
+		draftInvoice(auth, formatInvoice(invoice)))
+	.then((json)=>{
+		result = json.id;
+	})
+	.catch(()=> {
+		return result;
+	});
+	return result;
+}
 
 async function generateInvoiceNo() {
 	var invoice = null;
@@ -232,27 +223,13 @@ async function generateInvoiceNo() {
 	.then((auth)=>
 		getInvoiceNo(auth))
 	.then((json)=>{
-		invoice = "CL" + json.invoice_number;
-		console.log("generateInvoiceNo: " + invoice);
+		invoice = json.invoice_number;
 	})
 	.catch(()=> {
 		return invoice;
 	});
 	return invoice;
 }
-/*
-export async function getNewInvoiceNo(req, res) {
-	await authorization()
-	.then((auth)=>
-		generateInvoiceNo(auth))
-	.then((json)=>{
-		let result = {
-			"invoice_number": "CL"+json.invoice_number
-		}
-		res.status(200).json(result);
-		
-	});
-}*/
 
 export async function getPaymentByPaymentId(req, res) {
 	let status = auth.adminAllow(req);
@@ -287,29 +264,19 @@ export async function updatePaymentByPaymentId(req, res) {
 			const body = req.body;
 			let q = {
 				  text: `update fct_payment 
-						SET student_id = $2
-						,form_id = $3
-						,price = $4
-						,used_credit = $5
-						,first_name = $6
-						,email = $7
-						,last_updated_by = $8
-						,last_updated_date = $9
-						,invoice_no = $10
-						,application_id = $11
-						,course_ids = $12
-						,invoice_date = $13
-						,last_name = $14
-						,address = $15
-						,city = $16
-						,postal_code = $17
-						,discount = $18
-						,invoice_due_date = $19,
-						,paid_date = $20,
-						,payment_method = $21
-						,payment_status = $22
+						SET invoice_no = $2
+						,invoice_date = $3
+						,invoice_due_date = $4
+						,application_id = $5
+						,paypal_send = $6
+						,paypal_id = $7
+						,paid_date = $8,
+						,payment_method = $9
+						,payment_status = $10
+						,last_updated_by = $11
+						,last_updated_date = $12
 						WHERE payment_id = $1`,
-				  values: [body.payment_id, body.student_id, body.form_id, body.price, body.used_credit, body.name, body.email, 'Admin', new Date(), body.invoice_no, body.application_id, body.course_ids, body.invoice_date, body.last_name, body.address, body.city, body.postal_code, body.discount, body.invoice_due_date, body.paid_date, body.payment_method, body.payment_status],
+				  values: [body.payment_id, body.invoice_no, body.invoice_date, body.invoice_due_date, body.application_id, body.paypal_send, body.paypal_id, body.paid_date, body.payment_method, body.payment_status, 'Admin', new Date()],
 				};
 			dbQuery(q).then((data)=>{
 				console.log(data);
@@ -328,51 +295,120 @@ export async function createPayment(req, res) {
 	if (status!=200) {
 		res.sendStatus(status);
 	} else {
-		if (req.body == undefined) {
+		/*if (req.params.applicationid == undefined) {
 			res.sendStatus(500);
-		} else {
-			generateInvoiceNo()
-			.then((invoiceNo)=>{
-				console.log("invoiceNo: "+invoiceNo);
-				const body = req.body;
-				let q = {
-					  text: `INSERT INTO fct_payment
-							(student_id
-							,form_id
-							,price
-							,used_credit
-							,first_name
-							,email
-							,created_by
-							,created_date
-							,last_updated_by
-							,last_updated_date
-							,invoice_no
-							,application_id
-							,course_ids
-							,invoice_date
-							,last_name
-							,address
-							,city
-							,postal_code
-							,discount
-							,invoice_due_date
-							) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING payment_id`,
-					  values: [body.student_id, body.form_id, body.price, body.used_credit, body.first_name, body.email, 'Admin', new Date(), 'Admin', new Date(), invoiceNo, body.application_id, body.course_ids, new Date(), body.last_name, body.address, body.city, body.postal_code, body.discount, body.invoice_due_date],
+		} else {*/
+			//check any invoice generated?
+			const { data, status, error } = await req.app.locals.db
+				.from('fct_payment')
+				.select()
+				.eq('application_id', req.params.applicationid);
+
+			if (error) {
+				res.status(status).json(error);
+			}
+			
+			if (data.length>0) {
+				console.log(data);
+				res.status(500).send("Invoice was generated on "+data[0].invoice_date+" previously.");
+			} else {
+				//call paypal to get invoice no.
+				generateInvoiceNo()
+				.then((invoiceNo)=>{
+					console.log("invoiceNo: "+invoiceNo);
+					let q1 = {
+						text: `INSERT INTO fct_payment
+								(invoice_no
+								,application_id
+								,invoice_date
+								,created_by
+								,created_date
+								,last_updated_by
+								,last_updated_date
+								,invoice_due_date
+								,paypal_send
+								) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) 
+								RETURNING payment_id`,
+						values: [invoiceNo, req.params.applicationid, new Date(), 'Admin', new Date(), 'Admin', new Date(), null, 'N'],
+						};
+					let q2 = {
+						text: `select a.application_id, a.student_id, a.form_id, a.course_ids, a.price, a.used_credit, 
+						(case when a.has_early_bird_discount then f.early_bird_discount else 0 end) + 
+						(case when a.has_ig_discount then f.ig_discount else 0 end) discount,
+							s.first_name, s.last_name, s.email, s.address, s.city, s.postal_code, s.phone_no,
+							p.payment_id, p.invoice_no, to_char(p.invoice_date,'YYYY-MM-DD') invoice_date, 
+							to_char(p.invoice_due_date,'YYYY-MM-DD') invoice_due_date,
+							case when lower(a.lang)='zh' then course_name_zh
+								when lower(a.lang) like 'zh%hant' then course_name_zh_hant
+								else course_name_en
+							end course_name
+							from fct_application a
+							inner join dim_student s on (a.student_id=s.student_id)
+							inner join fct_payment p on (a.application_id=p.application_id)
+							inner join dim_form f on (a.form_id=f.form_id)
+							inner join dim_course c on c.course_id = ANY(a.course_ids)
+							where a.application_id=$1`,
+						values: [req.params.applicationid],							
 					};
-				dbQuery(q).then((d)=>{
-					console.log(d.rows[0].payment_id);
-					req.params.id = d.rows[0].payment_id
-					//getPaymentByPaymentId(req, res);
-					res.status(200).json(d);
+					dbQuery(q1).then((paymentId)=>{
+						dbQuery(q2).then((invoice)=>{
+							createInvoice(invoice).then((paypal)=>{
+								let q3 = {
+									text: `update fct_payment
+											set paypal_send = $2
+											,paypal_id = $3
+											,last_updated_by = $4
+											,last_updated_date =$5
+											where application_id=$1 
+											RETURNING paypal_id`,
+									values: [req.params.applicationid, 'P', paypal, 'Admin', new Date()],
+								};
+								dbQuery(q3).then(()=>{
+									//sent Invoice
+									sendInvoice(paypal).then((d)=>{
+										//update paypal sent status
+										let q4 = {
+											text: `update fct_payment
+													set paypal_send = $2
+													,last_updated_by = $3
+													,last_updated_date =$4
+													where application_id=$1
+													RETURNING payment_id`,
+											values: [req.params.applicationid, 'Y', 'Admin', new Date()],
+										};
+										dbQuery(q4).then((payment)=>{
+											req.params.id = payment.rows[0].payment_id;
+											//call get payment
+											//return payment information
+											 getPaymentByPaymentId(req, res);
+										})
+										.catch((error)=> {
+											res.status(500).json(error);
+										});
+									})
+									.catch((error)=> {
+										res.status(500).json(error);
+									});
+								})
+								.catch((error)=> {
+									res.status(500).json(error);
+								});
+							})
+							.catch((error)=> {
+								res.status(500).json(error);
+							});
+						})
+						.catch((error)=> {
+							res.status(500).json(error);
+						});
+					})
+					.catch((error)=> {
+						res.status(500).json(error);
+					});
 				})
 				.catch((error)=> {
 					res.status(500).json(error);
 				});
-			})
-			.catch((error)=> {
-				res.status(500).json(error);
-			});
 		}
 	}
 }
