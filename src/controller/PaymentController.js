@@ -2,6 +2,7 @@ import * as auth from '../utility/AuthFunc.js';
 import pg from 'pg'
 import format from 'pg-format';
 import fetch from 'node-fetch'
+import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
 const paypalUrl = process.env.PAYPAL_URL;
@@ -155,6 +156,28 @@ async function sendInvoice2(auth, paypalId) {
 		return "Missing paypalId";
 	}
 }
+
+async function getInvoiceDetails(auth, payments) {
+	if (auth === undefined) {
+		throw 'INVALID authorization';
+	}
+
+	const details = [];
+
+	for (const payment of payments) {
+		const response = await fetch(`${paypalUrl}/v2/invoicing/invoices/${payment.paypal_id}`, {
+			headers: {
+				'Authorization': `Bearer ${auth.access_token}`,
+				'Content-Type': 'application/json'
+			}
+		});
+		const json = await response.json();
+		details.push({ payment_id: payment.payment_id, status: json.status });
+	}
+
+	return details;
+}
+
 async function sendInvoice(paypalId) {
 	await authorization()
 	.then((auth)=>{
@@ -438,4 +461,63 @@ export function deletePaymentByPaymentId(req, res) {
 			});
 		}
 	}
+}
+
+// POST http://localhost:3008/api/v1/payment/invoice-check
+export async function checkInvoices(req, res) {
+	const authStatus = auth.adminAllow(req);
+
+	if (authStatus !== 200) {
+		res.sendStatus(authStatus);
+		return;
+	}
+
+	let { data, status, error } = await req.app.locals.db
+		.from('fct_payment')
+		.select('payment_id, paypal_id')
+		.filter('payment_status', 'not.is', true);
+
+	if (error) {
+		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
+		return;
+	}
+
+	const payments = []
+	const paidPaymentIds = [];
+	let isCheckFailed = false;
+
+	await authorization()
+		.then(auth => {
+			return getInvoiceDetails(auth, data);
+		})
+		.then(details => {
+			details.forEach(detail => {
+				if (detail.status === 'PAID' || detail.status === 'MARKED_AS_PAID') {
+					paidPaymentIds.push(detail.payment_id);
+					payments.push({ payment_id: detail.payment_id, payment_status: true });
+				} else {
+					payments.push({ payment_id: detail.payment_id, payment_status: false });
+				}
+			});
+		})
+		.catch(error => {
+			isCheckFailed = true;
+			res.status(500).json(outputObjectBuilder.prependStatus(500, error.message, null));
+		});
+
+	if (isCheckFailed) {
+		return;
+	}
+
+	({ status, error } = await req.app.locals.db
+		.from('fct_payment')
+		.update('payment_status', true)
+		.in('payment_id', paidPaymentIds));
+
+	if (error) {
+		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
+		return;
+	}
+
+	res.status(200).json(outputObjectBuilder.prependStatus(200, null, { payments: payments }));
 }
