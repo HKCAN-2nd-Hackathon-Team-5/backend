@@ -64,6 +64,7 @@ function getCourseInfo(data) {
 					"discount": data.rows[i].early_bird_discount
 				},
 				"ig_discount": data.rows[i].ig_discount,
+				"return_discount": data.rows[i].return_discount,
 				"add_questions": {
 					"q1": {
 						"en": data.rows[i].add_questions_en_1,
@@ -116,7 +117,7 @@ export async function getAllForm(req, res) {
 		let q1 = {
 				  text: `select f.form_id, f.title_en, f.title_zh_hant, f.title_zh, f.desc_en, f.desc_zh_hant, f.desc_zh, 
 						f.start_date start_date, f.end_date end_date, f.is_kid_form, 
-						f.early_bird_end_date, f.early_bird_discount, f.ig_discount, 
+						f.early_bird_end_date, f.early_bird_discount, f.ig_discount, f.return_discount,
 						f.add_questions_en_1, f.add_questions_zh_hant_1, f.add_questions_zh_1, 
 						f.add_questions_en_2, f.add_questions_zh_hant_2, f.add_questions_zh_2,
 						f.add_questions_en_3, f.add_questions_zh_hant_3, f.add_questions_zh_3,
@@ -210,6 +211,7 @@ export async function getFormByFormId(req, res) {
 						"discount": data.rows[0].early_bird_discount
 					},
 					"ig_discount": data.rows[0].ig_discount,
+					"return_discount": data.rows[0].return_discount,
 					"add_questions": {
 						"q1": {
 							"en": data.rows[0].add_questions_en_1,
@@ -274,23 +276,24 @@ export function updateFormByFormId(req, res) {
 						,early_bird_end_date=$11
 						,early_bird_discount=$12
 						,ig_discount=$13
-						,add_questions_en_1=$14
-						,add_questions_zh_hant_1=$15
-						,add_questions_zh_1=$16
-						,add_questions_en_2=$17
-						,add_questions_zh_hant_2=$18
-						,add_questions_zh_2=$19
-						,add_questions_en_3=$20
-						,add_questions_zh_hant_3=$21
-						,add_questions_zh_3=$22
-						,add_questions_en_4=$23
-						,add_questions_zh_hant_4=$24
-						,add_questions_zh_4=$25
-						,add_questions_en_5=$26
-						,add_questions_zh_hant_5=$27
-						,add_questions_zh_5=$28
+						,return_discount=$14
+						,add_questions_en_1=$15
+						,add_questions_zh_hant_1=$16
+						,add_questions_zh_1=$17
+						,add_questions_en_2=$18
+						,add_questions_zh_hant_2=$19
+						,add_questions_zh_2=$20
+						,add_questions_en_3=$21
+						,add_questions_zh_hant_3=$22
+						,add_questions_zh_3=$23
+						,add_questions_en_4=$24
+						,add_questions_zh_hant_4=$25
+						,add_questions_zh_4=$26
+						,add_questions_en_5=$27
+						,add_questions_zh_hant_5=$28
+						,add_questions_zh_5=$29
 						WHERE form_id = $1`,						
-				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
+				  values: [body.form_id, body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.return_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};
 			dbQuery(q1).then((data)=>{
 				let courses = body.courses;
@@ -356,6 +359,7 @@ export function createFormByFormId(req, res) {
 						,early_bird_end_date
 						,early_bird_discount
 						,ig_discount
+						,return_discount
 						,add_questions_en_1
 						,add_questions_zh_hant_1
 						,add_questions_zh_1
@@ -371,8 +375,8 @@ export function createFormByFormId(req, res) {
 						,add_questions_en_5
 						,add_questions_zh_hant_5
 						,add_questions_zh_5
-						) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27) RETURNING form_id`,
-				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
+						) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28) RETURNING form_id`,
+				  values: [body.title.en, body.title.zh_Hant, body.title.zh, body.desc.en, body.desc.zh_Hant, body.desc.zh, body.start_date, body.end_date, body.is_kid_form, body.early_bird.end_date, body.early_bird.discount, body.ig_discount, body.return_discount, body.add_questions.q1.en, body.add_questions.q1.zh_Hant, body.add_questions.q1.zh, body.add_questions.q2.en, body.add_questions.q2.zh_Hant, body.add_questions.q2.zh, body.add_questions.q3.en, body.add_questions.q3.zh_Hant, body.add_questions.q3.zh, body.add_questions.q4.en, body.add_questions.q4.zh_Hant, body.add_questions.q4.zh, body.add_questions.q5.en, body.add_questions.q5.zh_Hant, body.add_questions.q5.zh],
 				};			
 			dbQuery(q1).then((d)=>{
 				req.params.id = d.rows[0].form_id;

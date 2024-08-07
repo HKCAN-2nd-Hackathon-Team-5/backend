@@ -26,6 +26,8 @@ CREATE TABLE dim_course (
 	,venue               	nvarchar(50)
 	,start_date          	date
 	,end_date            	date
+	,weekday				int[]
+    ,except_date			date[]
 	,start_time          	time(7)
 	,end_time            	time(7)
 	,capacity            	int
@@ -33,8 +35,6 @@ CREATE TABLE dim_course (
 	,age_min             	int
 	,age_max             	int
 	,min_attendance      	int
-	,weekday				int[]
-	,except_date			date[]
     );
 /*
 -- store array weekday for course
@@ -65,6 +65,7 @@ CREATE TABLE dim_form (
 	,early_bird_end_date		date
 	,early_bird_discount		decimal(38,6)
 	,ig_discount				decimal(38,6)
+	,return_discount            decimal(38,6)
 	,add_questions_en_1			varchar(1000)
 	,add_questions_zh_hant_1	nvarchar(1000)
 	,add_questions_zh_1			nvarchar(1000)
@@ -113,8 +114,9 @@ CREATE TABLE fct_application (
 	,consent_phone_no	     bigint
 	,remark				     nvarchar(1000)
 	,submit_time		     datetime
-	,has_early_bird_discount char(1)
-	,has_ig_discount		 char(1)
+	,has_early_bird_discount boolean
+	,has_ig_discount		 boolean
+	,has_return_discount     boolean
 	,deduct_credit			 decimal(38,6)
 	,price					 decimal(38,6)
 	);
@@ -135,7 +137,7 @@ CREATE TABLE fct_payment (
 	,name				nvarchar(100)
 	,email				varchar(100)*/
 	,payment_method		varchar(20)
-	,payment_status		char(1)
+	,payment_status		boolean
 	,paid_date			datetime
 	,created_by			varchar(100)
 	,created_date		datetime

@@ -1,7 +1,6 @@
 import constructOutputObject from '../utility/ConstructOutputObject.js';
 import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 import * as auth from '../utility/AuthFunc.js';
-import * as dateStringBuilder from '../utility/DateStringBuilder.js';
 
 // POST http://localhost:3008/api/v1/application
 export async function createApplication(req, res) {
@@ -31,7 +30,15 @@ export async function createApplication(req, res) {
 
         let { data, status, error } = await req.app.locals.db
             .from('dim_form')
-            .select(`${formTitle}, start_date, end_date, early_bird_end_date, early_bird_discount, ig_discount`)
+            .select(`
+                ${formTitle},
+                start_date,
+                end_date,
+                early_bird_end_date,
+                early_bird_discount,
+                ig_discount,
+                return_discount
+            `)
             .eq('form_id', req.body.application.form_id);
 
         if (error) {
@@ -64,6 +71,7 @@ export async function createApplication(req, res) {
         applicationSuffix.has_ig_discount = !!req.body.application.ig_username;
         const earlyBirdDiscount = data[0].early_bird_discount;
         const igDiscount = data[0].ig_discount;
+        const returnDiscount = data[0].return_discount;
 
         if (req.body.application.course_ids.length === 0) {
             res.status(400).json(constructOutputObject(400, `Empty course_ids`, req.body));
@@ -130,9 +138,8 @@ export async function createApplication(req, res) {
         }
 
         const student = {};
-        const is_student_exist = data.length > 0;
 
-        if (is_student_exist) {
+        if (data.length > 0) {
             student.student_id = data[0].student_id;
             Object.assign(student, req.body.student);
             student.credit_balance = data[0].credit_balance;
@@ -168,6 +175,19 @@ export async function createApplication(req, res) {
                 res.status(status).json(constructOutputObject(status, error, req.body));
                 return;
             }
+
+            ({ data, status, error } = await req.app.locals.db
+                .from('fct_payment')
+                .select('payment_id, fct_application!inner()')
+                .eq('fct_application.student_id', student.student_id)
+                .eq('payment_status', true));
+
+            if (error) {
+                res.status(status).json(constructOutputObject(status, error, req.body));
+                return;
+            }
+
+            applicationSuffix.has_return_discount = data.length > 0;
         } else {
             ({ data, status, error } = await req.app.locals.db
                 .from('dim_student')
@@ -182,6 +202,7 @@ export async function createApplication(req, res) {
             student.student_id = data[0].student_id;
             Object.assign(student, req.body.student);
             student.credit_balance = data[0].credit_balance;
+            applicationSuffix.has_return_discount = false;
         }
 
         const applicationData = { student_id: student.student_id };
@@ -193,6 +214,10 @@ export async function createApplication(req, res) {
 
         if (applicationSuffix.has_ig_discount) {
             totalPrice -= igDiscount;
+        }
+
+        if (applicationSuffix.has_return_discount) {
+            totalPrice -= returnDiscount;
         }
 
         totalPrice = Math.max(totalPrice, 0);
@@ -213,13 +238,6 @@ export async function createApplication(req, res) {
             .select('application_id'));
 
         if (error) {
-            if (!is_student_exist) {
-                await req.app.locals.db
-                    .from('dim_student')
-                    .delete()
-                    .eq('student_id', student.student_id);
-            }
-
             res.status(status).json(constructOutputObject(status, error, req.body));
             return;
         }
@@ -315,6 +333,7 @@ export async function readApplications(req, res) {
                     discount: data[i].dim_form.early_bird_discount
                 },
                 ig_discount: data[i].dim_form.ig_discount,
+                return_discount: data[i].dim_form.return_discount,
                 add_questions: {
                     q1: {
                         en: data[i].dim_form.add_questions_en_1,
@@ -368,6 +387,7 @@ export async function readApplications(req, res) {
             submit_time: data[i].submit_time,
             has_early_bird_discount: data[i].has_early_bird_discount,
             has_ig_discount: data[i].has_ig_discount,
+            has_return_discount: data[i].has_return_discount,
             used_credit: data[i].used_credit,
             price: data[i].price
         }
