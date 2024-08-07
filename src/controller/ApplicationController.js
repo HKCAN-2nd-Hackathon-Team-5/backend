@@ -1,4 +1,4 @@
-import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
 import * as autoEmailHelper from '../utility/AutoEmailHelper.js';
 import * as auth from '../utility/AuthFunc.js';
 
@@ -42,12 +42,12 @@ export async function createApplication(req, res) {
             .eq('form_id', req.body.application.form_id);
 
         if (error) {
-            res.status(status).json(constructOutputObject(status, error, req.body));
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
             return;
         }
 
         if (data.length === 0) {
-            res.status(404).json(constructOutputObject(
+            res.status(404).json(outputObjectBuilder.prependStatus(
                 404,
                 `Form with id ${req.body.application.form_id} not found`,
                 req.body
@@ -59,7 +59,7 @@ export async function createApplication(req, res) {
         let currentDate = Date.parse(applicationSuffix.submit_time.slice(0, 10));
 
         if (currentDate < Date.parse(data[0].start_date) || currentDate > Date.parse(data[0].end_date)) {
-            res.status(400).json(constructOutputObject(
+            res.status(400).json(outputObjectBuilder.prependStatus(
                 400,
                 `Form with id ${req.body.application.form_id} not opening`,
                 req.body
@@ -74,7 +74,7 @@ export async function createApplication(req, res) {
         const returnDiscount = data[0].return_discount;
 
         if (req.body.application.course_ids.length === 0) {
-            res.status(400).json(constructOutputObject(400, `Empty course_ids`, req.body));
+            res.status(400).json(outputObjectBuilder.prependStatus(400, `Empty course_ids`, req.body));
             return;
         }
 
@@ -84,7 +84,7 @@ export async function createApplication(req, res) {
             .in('course_id', req.body.application.course_ids));
 
         if (error) {
-            res.status(status).json(constructOutputObject(status, error, req.body));
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
             return;
         }
 
@@ -121,7 +121,7 @@ export async function createApplication(req, res) {
         });
 
         if (error.length > 0) {
-            res.status(400).json(constructOutputObject(400, error, req.body));
+            res.status(400).json(outputObjectBuilder.prependStatus(400, error, req.body));
             return;
         }
 
@@ -133,7 +133,7 @@ export async function createApplication(req, res) {
             .eq('dob', req.body.student.dob));
 
         if (error) {
-            res.status(status).json(constructOutputObject(status, error, req.body));
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
             return;
         }
 
@@ -151,12 +151,12 @@ export async function createApplication(req, res) {
                 .eq('form_id', req.body.application.form_id));
 
             if (error) {
-                res.status(status).json(constructOutputObject(status, error, req.body));
+                res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
                 return;
             }
 
             if (data.length > 0) {
-                res.status(400).json(constructOutputObject(
+                res.status(400).json(outputObjectBuilder.prependStatus(
                     400,
                     `Duplicated application with student_id ${student.student_id} and form_id ${req.body.application.form_id}`,
                     req.body
@@ -172,7 +172,7 @@ export async function createApplication(req, res) {
                 .eq('student_id', student.student_id));
 
             if (error) {
-                res.status(status).json(constructOutputObject(status, error, req.body));
+                res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
                 return;
             }
 
@@ -183,7 +183,7 @@ export async function createApplication(req, res) {
                 .eq('payment_status', true));
 
             if (error) {
-                res.status(status).json(constructOutputObject(status, error, req.body));
+                res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
                 return;
             }
 
@@ -195,7 +195,7 @@ export async function createApplication(req, res) {
                 .select('student_id, credit_balance'));
 
             if (error) {
-                res.status(status).json(constructOutputObject(status, error, req.body));
+                res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
                 return;
             }
 
@@ -238,7 +238,7 @@ export async function createApplication(req, res) {
             .select('application_id'));
 
         if (error) {
-            res.status(status).json(constructOutputObject(status, error, req.body));
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
             return;
         }
 
@@ -256,9 +256,9 @@ export async function createApplication(req, res) {
             console.log(info.response);
         })
 
-        res.status(201).json(constructOutputObject(201, null, req.body));
+        res.status(201).json(outputObjectBuilder.prependStatus(201, null, req.body));
     } catch (error) {
-        res.status(400).json(constructOutputObject(400, error.message, req.body));
+        res.status(400).json(outputObjectBuilder.prependStatus(400, error.message, req.body));
     }
 }
 
@@ -283,12 +283,12 @@ export async function readApplications(req, res) {
     const { data, status, error } = await query;
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
         return;
     }
 
     if (req.params.application_id !== undefined && data.length === 0) {
-        res.status(404).json(constructOutputObject(
+        res.status(404).json(outputObjectBuilder.prependStatus(
             404,
             `Application with id ${req.params.application_id} not found`,
             null
@@ -394,9 +394,9 @@ export async function readApplications(req, res) {
     }
 
     if (req.params.application_id !== undefined) {
-        res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, null, { application: data[0] }));
     } else {
-        res.status(status).json(constructOutputObject(status, null, { applications: data }));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, null, { applications: data }));
     }
 }
 
@@ -416,9 +416,9 @@ export async function updateApplication(req, res) {
         .select();
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, req.body));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { application: data[0] }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { application: data[0] }));
 }

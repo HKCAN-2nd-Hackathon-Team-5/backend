@@ -1,4 +1,4 @@
-import constructOutputObject from '../utility/ConstructOutputObject.js';
+import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
 import * as auth from '../utility/AuthFunc.js';
 
 // POST http://localhost:3008/api/v1/student
@@ -16,14 +16,14 @@ export async function createStudent(req, res) {
         .select('student_id, credit_balance');
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, req.body));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
         return;
     }
 
     const student = { student_id: data[0].student_id };
     Object.assign(student, req.body);
     student.credit_balance = data[0].credit_balance;
-    res.status(status).json(constructOutputObject(status, null, { student: student }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { student: student }));
 }
 
 // GET http://localhost:3008/api/v1/student
@@ -42,11 +42,11 @@ export async function readStudents(req, res) {
             .select();
 
         if (error) {
-            res.status(status).json(constructOutputObject(status, error, null));
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
             return;
         }
 
-        res.status(status).json(constructOutputObject(status, null, { students: data }));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, null, { students: data }));
         return;
     }
 
@@ -56,16 +56,20 @@ export async function readStudents(req, res) {
         .eq('student_id', req.params.student_id);
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
         return;
     }
 
     if (data.length === 0) {
-        res.status(404).json(constructOutputObject(404, `Student with id ${req.params.student_id} not found`, null));
+        res.status(404).json(outputObjectBuilder.prependStatus(
+            404,
+            `Student with id ${req.params.student_id} not found`,
+            null
+        ));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { student: data[0] }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { student: data[0] }));
 }
 
 // GET http://localhost:3008/api/v1/student/query
@@ -91,11 +95,11 @@ export async function readStudentsBySearch(req, res) {
     const { data, status, error } = await query;
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { students: data }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { students: data }));
 }
 
 // GET http://localhost:3008/api/v1/student/:student_id/application
@@ -113,11 +117,11 @@ export async function readApplicationsByStudentId(req, res) {
         .eq('student_id', req.params.student_id);
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { applications: data }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { applications: data }));
 }
 
 // PUT http://localhost:3008/api/v1/student/:student_id
@@ -136,11 +140,11 @@ export async function updateStudent(req, res) {
         .select();
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, req.body));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { student: data[0] }));
+    res.status(status).json(outputObjectBuilder.prependStatus(status, null, { student: data[0] }));
 }
 
 // DELETE http://localhost:3008/api/v1/student/:student_id
@@ -158,9 +162,13 @@ export async function deleteStudent(req, res) {
         .eq('student_id', req.params.student_id);
 
     if (error) {
-        res.status(status).json(constructOutputObject(status, error, null));
+        res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
         return;
     }
 
-    res.status(status).json(constructOutputObject(status, null, { student: { student_id: req.params.student_id } }));
+    res.status(status).json(outputObjectBuilder.prependStatus(
+        status,
+        null,
+        { student: { student_id: req.params.student_id } }
+    ));
 }
