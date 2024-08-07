@@ -9,11 +9,10 @@ router.put('/edit', paymentController.updatePaymentByPaymentId);
 router.post('/create', paymentController.createPayment);
 router.delete('/delete/:id', paymentController.deletePaymentByPaymentId);
 */
-router.get('/', paymentController.createInvoice);	//get invoice no. from PayPal
-router.post('/create/invoice', paymentController.createInvoice);
+//router.get('/', paymentController.createInvoice);	//get invoice no. from PayPal
 router.get('/:id', paymentController.getPaymentByPaymentId);
 router.put('/edit', paymentController.updatePaymentByPaymentId);
-router.post('/create', paymentController.createPayment);
+router.post('/create/:applicationid', paymentController.createPayment);
 router.delete('/delete/:id', paymentController.deletePaymentByPaymentId);
 
 //get all payment
