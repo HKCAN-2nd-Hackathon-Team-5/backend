@@ -526,7 +526,7 @@ export async function checkInvoices(req, res) {
 		.upsert(payments)
 		.select(`
 			fct_application(
-				dim_student(student_id, first_name, email, credit_balance),
+				dim_student(student_id, first_name, email, held_credit),
 				form_id,
 				lang,
 				used_credit
@@ -548,7 +548,7 @@ export async function checkInvoices(req, res) {
 		const student = application.dim_student;
 		students.push({
 			student_id: student.student_id,
-			credit_balance: student.credit_balance - application.used_credit
+			held_credit: student.held_credit - application.used_credit
 		});
 		formIds.add(application.form_id);
 		studentDetails.set(student.student_id, { first_name: student.first_name, email: student.email });
