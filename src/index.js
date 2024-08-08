@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors'
 import 'dotenv/config';
 import bodyParser from 'body-parser';
+import cron from 'node-cron';
 import databaseConnection from './utility/DatabaseConnection.js';
 import authentication from './utility/Authentication.js';
 import userauth from './utility/AuthFunc.js';
@@ -27,4 +28,15 @@ const server = app.listen(process.env.PORT, () => {
     const host = server.address().address;
     const port = server.address().port;
     console.log(`Backend server listening at ${host === '::' ? 'http://localhost' : 'https://' + host}:${port}`);
+	
+	var markPaidTask = cron.schedule('* */1 * * *', () =>  {
+		//mark payment every hour
+		console.log("markPaidTask was scheduled on " + new Date());
+		const url = `${host === '::' ? 'http://localhost' : 'https://' + host}:${port}/api/v1/payment/invoice-check`;
+		const markPaid = fetch(url)
+		console.log("markPaidTask was executed on " + new Date());
+		}, {
+		  scheduled: false
+	});
+	markPaidTask.start();
 })
