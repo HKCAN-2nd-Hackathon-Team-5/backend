@@ -41,7 +41,8 @@ export async function getAllCourse(req, res) {
 	} else {
 		const { data, status, error } = await req.app.locals.db
 			.from('dim_course')
-			.select();
+			.select()
+			.order('start_date', { ascending: false });
 
 		if (error) {
 			res.status(status).json(error);
@@ -102,6 +103,8 @@ export async function getCourseByCourseId(req, res) {
 		let result = {};
 		let courses = [];
 		for (var i = 0; i < data.length; i++) {
+			//select * from fct_payment p inner join dim_course c on p.course_id=c.course_id inner join dim_student s on s.student_id=a.student_id where p.payment_status in ('PAID');	//first_name, last_name, email, phone_no, emergency, 
+			
 			let course = {
 				"course_id": data[i].course_id,								
 				"course_name": {
