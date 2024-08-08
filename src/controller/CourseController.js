@@ -1,6 +1,7 @@
 //import databaseQuery from "../utility/DatabaseQuery.js";
 import * as auth from '../utility/AuthFunc.js';
 import pg from 'pg'
+import * as outputObjectBuilder from '../utility/OutputObjectBuilder.js';
 const { Pool, Client } = pg
 const connectionString = process.env.DATABASE_URL;
  
@@ -245,8 +246,40 @@ export function deleteCourseByCourseId(req, res) {
 	}
 }
 
+// GET http://localhost:3008/api/v1/course/:course_id/paid-student
+export async function readPaidStudentsByCourseId(req, res) {
+	const { data, status, error } = await req.app.locals.db
+		.from('fct_application')
+		.select(`
+			dim_student(first_name, last_name, gender, dob, address, city, postal_code, phone_no, email),
+			fct_payment!inner()
+		`)
+		.eq('fct_payment.payment_status', 'PAID')
+		.contains('course_ids', [req.params.course_id]);
 
+	if (error) {
+		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
+		return;
+	}
 
+	for (let i = 0; i < data.length; i++) {
+		const student = data[i].dim_student;
+
+		data[i] = {
+			first_name: student.first_name,
+			last_name: student.last_name,
+			gender: student.gender,
+			dob: student.dob,
+			address: student.address,
+			city: student.city,
+			postal_code: student.postal_code,
+			phone_no: student.phone_no,
+			email: student.email
+		}
+	}
+
+	res.status(status).json(outputObjectBuilder.prependStatus(status, null, { students: data }));
+}
 
 //Get participant list (paid)-> insert to dim_participant_list (student_id, course_id)
 /*select * from dim_student s

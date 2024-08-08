@@ -8,4 +8,5 @@ router.get('/:id', courseController.getCourseByCourseId);
 router.put('/edit', courseController.updateCourseByCourseId);
 router.post('/create', courseController.createCourseByCourseId);
 router.delete('/delete/:id', courseController.deleteCourseByCourseId);
+router.get('/:course_id/paid-student', courseController.readPaidStudentsByCourseId);
 export default router;
