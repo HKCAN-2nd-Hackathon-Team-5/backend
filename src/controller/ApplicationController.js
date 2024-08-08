@@ -128,7 +128,7 @@ export async function createApplication(req, res) {
 
         ({ data, status, error } = await req.app.locals.db
             .from('dim_student')
-            .select('student_id, credit_balance')
+            .select('student_id, credit_balance, held_credit')
             .eq('first_name', req.body.student.first_name)
             .eq('last_name', req.body.student.last_name)
             .eq('dob', req.body.student.dob)
@@ -145,6 +145,7 @@ export async function createApplication(req, res) {
             student.student_id = data[0].student_id;
             Object.assign(student, req.body.student);
             student.credit_balance = data[0].credit_balance;
+            student.held_credit = data[0].held_credit;
 
             ({ data, status, error } = await req.app.locals.db
                 .from('fct_application')
@@ -196,7 +197,7 @@ export async function createApplication(req, res) {
             ({ data, status, error } = await req.app.locals.db
                 .from('dim_student')
                 .insert(req.body.student)
-                .select('student_id, credit_balance'));
+                .select('student_id, credit_balance, held_credit'));
 
             if (error) {
                 res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -206,6 +207,7 @@ export async function createApplication(req, res) {
             student.student_id = data[0].student_id;
             Object.assign(student, req.body.student);
             student.credit_balance = data[0].credit_balance;
+            student.held_credit = data[0].held_credit;
             applicationSuffix.has_return_discount = false;
         }
 
@@ -232,6 +234,18 @@ export async function createApplication(req, res) {
         } else {
             applicationSuffix.used_credit = totalPrice;
             applicationSuffix.price = 0;
+        }
+
+        ({ status, error } = await req.app.locals.db
+            .from('dim_student')
+            .update({
+                credit_balance: student.credit_balance - applicationSuffix.used_credit,
+                held_credit: student.held_credit + applicationSuffix.used_credit
+            }));
+
+        if (error) {
+            res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
+            return;
         }
 
         Object.assign(applicationData, applicationSuffix);
@@ -303,22 +317,22 @@ export async function readApplications(req, res) {
     }
 
     for (let i = 0; i < data.length; i++) {
-		//Get payment related information
-		let paymentQuery = req.app.locals.db
-        .from('fct_payment')
-        .select('*')
-		.eq('application_id',data[i].application_id);
-		
-		let paymentData = {}
-		await paymentQuery
-		.then((data, status)=>{
-			if (data.data[0]!=undefined) {
-				paymentData=data.data[0];
-			}
-		}).catch((error)=>{
-			res.status(paymentStatus).json(outputObjectBuilder.prependStatus(paymentStatus, paymentError, null));
-		});
-		
+        //Get payment related information
+        let paymentQuery = req.app.locals.db
+            .from('fct_payment')
+            .select('*')
+            .eq('application_id', data[i].application_id);
+
+        let paymentData = {}
+        await paymentQuery
+            .then((data, status) => {
+                if (data.data[0] != undefined) {
+                    paymentData = data.data[0];
+                }
+            }).catch((error) => {
+                res.status(paymentStatus).json(outputObjectBuilder.prependStatus(paymentStatus, paymentError, null));
+            });
+
         data[i] = {
             application_id: data[i].application_id,
             student: {
@@ -332,7 +346,8 @@ export async function readApplications(req, res) {
                 postal_code: data[i].dim_student.postal_code,
                 phone_no: data[i].dim_student.phone_no,
                 email: data[i].dim_student.email,
-                credit_balance: data[i].dim_student.credit_balance
+                credit_balance: data[i].dim_student.credit_balance,
+                held_credit: data[i].dim_student.held_credit
             },
             form: {
                 form_id: data[i].form_id,
@@ -412,7 +427,7 @@ export async function readApplications(req, res) {
             has_return_discount: data[i].has_return_discount,
             used_credit: data[i].used_credit,
             price: data[i].price,
-			payment: paymentData
+            payment: paymentData
         }
     }
 

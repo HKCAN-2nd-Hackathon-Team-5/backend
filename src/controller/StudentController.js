@@ -13,7 +13,7 @@ export async function createStudent(req, res) {
     const { data, status, error } = await req.app.locals.db
         .from('dim_student')
         .insert(req.body)
-        .select('student_id, credit_balance');
+        .select('student_id, credit_balance, held_credit');
 
     if (error) {
         res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
@@ -23,6 +23,7 @@ export async function createStudent(req, res) {
     const student = { student_id: data[0].student_id };
     Object.assign(student, req.body);
     student.credit_balance = data[0].credit_balance;
+    student.held_credit = data[0].held_credit;
     res.status(status).json(outputObjectBuilder.prependStatus(status, null, { student: student }));
 }
 
@@ -83,7 +84,10 @@ export async function readStudentsBySearch(req, res) {
     }
 
     const fields = ['first_name', 'last_name', 'gender', 'address', 'city', 'postal_code', 'email'];
-    let query = req.app.locals.db.from('dim_student').select();
+
+    let query = req.app.locals.db
+        .from('dim_student')
+        .select();
 
     fields.forEach(field => {
         if (req.query[field] === undefined) {
