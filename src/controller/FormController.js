@@ -114,8 +114,8 @@ export async function getAllForm(req, res) {
 			res.status(status).json(error);
 		}
 */		
-		let q1 = {
-				  text: `select f.form_id, f.title_en, f.title_zh_hant, f.title_zh, f.desc_en, f.desc_zh_hant, f.desc_zh, 
+
+		let allFormSql = `select f.form_id, f.title_en, f.title_zh_hant, f.title_zh, f.desc_en, f.desc_zh_hant, f.desc_zh, 
 						f.start_date start_date, f.end_date end_date, f.is_kid_form, 
 						f.early_bird_end_date, f.early_bird_discount, f.ig_discount, f.return_discount,
 						f.add_questions_en_1, f.add_questions_zh_hant_1, f.add_questions_zh_1, 
@@ -128,8 +128,15 @@ export async function getAllForm(req, res) {
 						c.weekday, c.except_date,  c.start_time, c.end_time, c.capacity, c.price, c.age_min, c.age_max, c.min_attendance
 						from dim_form f
 						inner join dim_form_course fc on (f.form_id=fc.form_id)
-						inner join dim_course c on (c.course_id=fc.course_id)
-						order by f.form_id`,
+						inner join dim_course c on (c.course_id=fc.course_id) `;
+		if (auth.adminAllow(req)!=200) {
+			//for public filter out inactive form
+			allFormSql += `where current_date between f.start_date and f.end_date `
+		}
+		allFormSql += `order by f.form_id`;
+		
+		let q1 = {
+				  text: allFormSql,
 				  values: [],
 				};
 				

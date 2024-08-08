@@ -29,7 +29,7 @@ const server = app.listen(process.env.PORT, () => {
     const port = server.address().port;
     console.log(`Backend server listening at ${host === '::' ? 'http://localhost' : 'https://' + host}:${port}`);
 	
-	var markPaidTask = cron.schedule('* * */1 * *', () =>  {
+	var markPaidTask = cron.schedule('0 0 */1 * * *', () =>  {
 		//mark payment every hour
 		console.log("markPaidTask was scheduled on " + new Date());
 		const url = `${host === '::' ? 'http://localhost' : 'https://' + host}:${port}/api/v1/payment/invoice-check`;
