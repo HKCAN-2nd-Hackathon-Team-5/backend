@@ -113,7 +113,7 @@ export async function createApplication(req, res) {
 
             const course = courseMap.get(courseId);
 
-            if (age < course.age_min || age > course.age_max) {
+            if (age < (course.age_min ?? 0) || age > (course.age_max ?? 1000)) {
                 error.push({ course_id: courseId, issue: 'Age requirement not met' });
                 return;
             }
