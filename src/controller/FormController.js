@@ -522,3 +522,39 @@ export async function readApplicationsByFormId(req, res) {
 
 	res.status(status).json(outputObjectBuilder.prependStatus(status, null, { applications: data }));
 }
+
+// GET http://localhost:3008/api/v1/form/:form_id/student-payment
+export async function readStudentsPaymentsByFormId(req, res) {
+	const { data, status, error } = await req.app.locals.db
+		.from('fct_application')
+		.select('dim_student!inner(first_name, last_name, phone_no, email), fct_payment(payment_status, invoice_no)')
+		.eq('form_id', req.params.form_id)
+
+	if (error) {
+		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
+	}
+
+	const studentsPayments = [];
+
+	data.forEach(studentPayment => {
+		studentsPayments.push({
+			student: {
+				first_name: studentPayment.dim_student.first_name,
+				last_name: studentPayment.dim_student.last_name,
+				phone_no: studentPayment.dim_student.phone_no,
+				email: studentPayment.dim_student.email
+			},
+			payment: studentPayment.fct_payment.length > 0
+				? {
+					invoice_no: studentPayment.fct_payment[0].invoice_no,
+					payment_status: studentPayment.fct_payment[0].payment_status
+				}
+				: {
+					invoice_no: null,
+					payment_status: 'NOT_INIT'
+				}
+		})
+	})
+
+	res.status(status).json(outputObjectBuilder.prependStatus(status, null, { data: studentsPayments }));
+}
