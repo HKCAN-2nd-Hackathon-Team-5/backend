@@ -4,7 +4,6 @@ import 'dotenv/config';
 import bodyParser from 'body-parser';
 import cron from 'node-cron';
 import databaseConnection from './utility/DatabaseConnection.js';
-import authentication from './utility/Authentication.js';
 import userauth from './utility/AuthFunc.js';
 import studentRouter from "./router/StudentRouter.js";
 import applicationRouter from "./router/ApplicationRouter.js";

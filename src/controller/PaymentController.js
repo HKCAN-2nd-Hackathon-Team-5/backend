@@ -159,26 +159,29 @@ async function sendInvoice2(auth, paypalId) {
 }
 
 async function getInvoiceDetails(auth, payments) {
-	if (auth === undefined) {
-		throw 'INVALID authorization';
-	}
+    if (auth === undefined) {
+        throw 'INVALID authorization';
+    }
 
-	const details = [];
+    const details = [];
 
-	for (const payment of payments) {
-		const response = await fetch(`${paypalUrl}/v2/invoicing/invoices/${payment.paypal_id}`, {
-			headers: {
-				'Authorization': `Bearer ${auth.access_token}`,
-				'Content-Type': 'application/json'
-			}
-		});
-		const json = await response.json();
-		details.push({ payment_id: payment.payment_id, 
-						status: json.status, 
-						data: json});
-	}
+    for (const payment of payments) {
+        const response = await fetch(`${paypalUrl}/v2/invoicing/invoices/${payment.paypal_id}`, {
+            headers: {
+                'Authorization': `Bearer ${auth.access_token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const json = await response.json();
+        details.push({
+            payment_id: payment.payment_id,
+            status: json.status,
+            payment_date: json.payments?.transactions[0].payment_date,
+            method: json.payments?.transactions[0].method
+        });
+    }
 
-	return details;
+    return details;
 }
 
 async function sendInvoice(paypalId) {
@@ -481,7 +484,7 @@ export async function checkInvoices(req, res) {
 	let { data, status, error } = await req.app.locals.db
 		.from('fct_payment')
 		.select('payment_id, paypal_id')
-		.in('payment_status', ['SENT','UNPAID']);
+		.in('payment_status', ['SENT', 'UNPAID']);
 
 	if (error) {
 		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
@@ -489,7 +492,6 @@ export async function checkInvoices(req, res) {
 	}
 
 	const payments = []
-	const paidPaymentIds = [];
 	let isCheckFailed = false;
 
 	await authorization()
@@ -498,27 +500,16 @@ export async function checkInvoices(req, res) {
 		})
 		.then(details => {
 			details.forEach(detail => {
-				if (detail.status === 'PAID' || detail.status === 'MARKED_AS_PAID') {
-					paidPaymentIds.push(detail.payment_id);
-					payments.push({ payment_id: detail.payment_id, payment_status: 'PAID' });
-					
-					let q = {
-						text: `update fct_payment
-								set payment_method = $2
-								,last_updated_by = $3
-								,last_updated_date = $4
-								,payment_status = $5
-								,paid_date = $6
-								where payment_id=$1 `,
-						values: [detail.payment_id, detail.data.payments.transactions[0].method, 'Admin', new Date(), 'PAID', detail.data.payments.transactions[0].payment_date],
-					};
-					dbQuery(q).catch((error)=>{
-						isCheckFailed = true;
-						res.status(500).json(outputObjectBuilder.prependStatus(500, error.message, null));
-					});
-				} else {
-					payments.push({ payment_id: detail.payment_id, payment_status: 'SENT' });
+				if (detail.status !== 'PAID' && detail.status !== 'MARKED_AS_PAID') {
+					return;
 				}
+
+				payments.push({
+					payment_id: detail.payment_id,
+					payment_method: detail.method,
+					payment_status: 'PAID',
+					paid_date: detail.payment_date
+				});
 			});
 		})
 		.catch(error => {
@@ -529,10 +520,10 @@ export async function checkInvoices(req, res) {
 	if (isCheckFailed) {
 		return;
 	}
-	
 
 	({ data, status, error } = await req.app.locals.db
 		.from('fct_payment')
+		.upsert(payments)
 		.select(`
 			fct_application(
 				dim_student(student_id, first_name, email, credit_balance),
@@ -540,45 +531,63 @@ export async function checkInvoices(req, res) {
 				lang,
 				used_credit
 			)
-		`)
-		.in('payment_id', paidPaymentIds));
+		`));
 
 	if (error) {
 		res.status(status).json(outputObjectBuilder.prependStatus(status, error, null));
 		return;
 	}
 
-	const paymentData = data;
+	const students = [];
+	const formIds = new Set();
+	const studentDetails = new Map();
+	const formDetails = new Map();
 
-	for (let i = 0; i < paymentData.length; i++) {
-		const application = paymentData[i].fct_application;
+	data.forEach(payment => {
+		const application = payment.fct_application;
+		const student = application.dim_student;
+		students.push({
+			student_id: student.student_id,
+			credit_balance: student.credit_balance - application.used_credit
+		});
+		formIds.add(application.form_id);
+		studentDetails.set(student.student_id, { first_name: student.first_name, email: student.email });
+		formDetails.set(student.student_id, { form_id: application.form_id, lang: application.lang });
+	});
 
-		await req.app.locals.db
-			.from('dim_student')
-			.update({ credit_balance: application.dim_student.credit_balance - application.used_credit })
-			.eq('student_id', application.dim_student.student_id);
+	await req.app.locals.db
+		.from('dim_student')
+		.upsert(students);
 
-		let formTitle;
+	({ data } = await req.app.locals.db
+		.from('dim_form')
+		.select('form_id, title_en, title_zh_hant, title_zh')
+		.in('form_id', Array.from(formIds)));
 
-		switch (application.lang.toLowerCase()) {
+	const formTitles = new Map();
+
+	data.forEach(form => {
+		formTitles.set(form.form_id, form);
+	})
+
+	studentDetails.forEach((student, id) => {
+		const form = formDetails.get(id);
+		let lang;
+
+		switch (form.lang.toLowerCase()) {
 			case 'en':
-				formTitle = 'title_en';
+				lang = 'title_en';
 				break;
 			case 'zh-hant':
 			case 'zh_hant':
-				formTitle = 'title_zh_hant';
+				lang = 'title_zh_hant';
 				break;
 			case 'zh':
-				formTitle = 'title_zh';
+				lang = 'title_zh';
 				break;
 		}
 
-		({ data } = await req.app.locals.db
-			.from('dim_form')
-			.select(formTitle)
-			.eq('form_id', application.form_id));
-
-		autoEmailHelper.sendEnrollConfirm(application.dim_student, data[0][formTitle], (error, info) => {
+		autoEmailHelper.sendEnrollConfirm(student, formTitles.get(form.form_id)[lang], (error, info) => {
 			if (error) {
 				console.error(error);
 				return;
@@ -586,7 +595,7 @@ export async function checkInvoices(req, res) {
 
 			console.log(info.response);
 		});
-	}
+	});
 
 	res.status(200).json(outputObjectBuilder.prependStatus(200, null, { payments: payments }));
 }
