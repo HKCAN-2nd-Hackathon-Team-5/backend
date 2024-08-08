@@ -241,7 +241,8 @@ export async function createApplication(req, res) {
             .update({
                 credit_balance: student.credit_balance - applicationSuffix.used_credit,
                 held_credit: student.held_credit + applicationSuffix.used_credit
-            }));
+            })
+            .eq('student_id', student.student_id));
 
         if (error) {
             res.status(status).json(outputObjectBuilder.prependStatus(status, error, req.body));
