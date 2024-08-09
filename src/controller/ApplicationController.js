@@ -57,7 +57,7 @@ export async function createApplication(req, res) {
         }
 
         formTitle = data[0][formTitle];
-        let currentDate = Date.parse(applicationSuffix.submit_time.slice(0, 10));
+        let currentDate = Date.parse(applicationSuffix.submit_time);
 
         if (currentDate < Date.parse(data[0].start_date) || currentDate > Date.parse(data[0].end_date)) {
             res.status(400).json(outputObjectBuilder.prependStatus(
