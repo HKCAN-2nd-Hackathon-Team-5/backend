@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export function sendApplicationConfirm(student, formTitle, callback) {
+export function sendApplicationConfirm(student, formTitle, lang, callback) {
     const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: student.email,
@@ -23,7 +23,7 @@ export function sendApplicationConfirm(student, formTitle, callback) {
     });
 }
 
-export function sendEnrollConfirm(student, formTitle, callback) {
+export function sendEnrollConfirm(student, formTitle, lang, callback) {
     const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: student.email,

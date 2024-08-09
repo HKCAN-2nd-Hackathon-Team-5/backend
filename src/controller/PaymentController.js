@@ -587,7 +587,7 @@ export async function checkInvoices(req, res) {
 				break;
 		}
 
-		autoEmailHelper.sendEnrollConfirm(student, formTitles.get(form.form_id)[lang], (error, info) => {
+		autoEmailHelper.sendEnrollConfirm(student, formTitles.get(form.form_id)[lang], lang, (error, info) => {
 			if (error) {
 				console.error(error);
 				return;

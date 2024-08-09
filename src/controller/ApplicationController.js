@@ -266,14 +266,19 @@ export async function createApplication(req, res) {
         req.body.student = student;
         req.body.application = application;
 
-        autoEmailHelper.sendApplicationConfirm(student, formTitle, (error, info) => {
-            if (error) {
-                console.error(error);
-                return;
-            }
+        autoEmailHelper.sendApplicationConfirm(
+            student,
+            formTitle,
+            application.lang.toLowerCase(),
+            (error, info) => {
+                if (error) {
+                    console.error(error);
+                    return;
+                }
 
-            console.log(info.response);
-        });
+                console.log(info.response);
+            }
+        );
 
         res.status(201).json(outputObjectBuilder.prependStatus(201, null, req.body));
     } catch (error) {
