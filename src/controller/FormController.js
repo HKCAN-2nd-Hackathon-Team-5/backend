@@ -544,24 +544,23 @@ export async function readStudentsPaymentsByFormId(req, res) {
 
 	const studentsPayments = [];
 
-	data.forEach(studentPayment => {
-		studentsPayments.push({
-			student: {
-				first_name: studentPayment.dim_student.first_name,
-				last_name: studentPayment.dim_student.last_name,
-				phone_no: studentPayment.dim_student.phone_no,
-				email: studentPayment.dim_student.email
-			},
-			payment: studentPayment.fct_payment.length > 0
-				? {
-					invoice_no: studentPayment.fct_payment[0].invoice_no,
-					payment_status: studentPayment.fct_payment[0].payment_status
-				}
-				: {
-					invoice_no: null,
-					payment_status: 'NOT_INIT'
-				}
-		})
+	data.forEach(datum => {
+		const studentPayment = {
+			student_first_name: datum.dim_student.first_name,
+			student_last_name: datum.dim_student.last_name,
+			student_phone_no: datum.dim_student.phone_no,
+			student_email: datum.dim_student.email
+		}
+
+		if (datum.fct_payment.length > 0) {
+			studentPayment.payment_invoice_no = datum.fct_payment[0].invoice_no;
+			studentPayment.payment_status = datum.fct_payment[0].payment_status;
+		} else {
+			studentPayment.payment_invoice_no = null;
+			studentPayment.payment_status = 'NOT_INIT';
+		}
+
+		studentsPayments.push(studentPayment);
 	})
 
 	res.status(status).json(outputObjectBuilder.prependStatus(status, null, { data: studentsPayments }));
