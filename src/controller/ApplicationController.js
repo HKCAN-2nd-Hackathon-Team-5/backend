@@ -68,7 +68,8 @@ export async function createApplication(req, res) {
             return;
         }
 
-        applicationSuffix.has_early_bird_discount = currentDate <= Date.parse(data[0].early_bird_end_date);
+        applicationSuffix.has_early_bird_discount = data[0].early_bird_end_date
+            && currentDate <= Date.parse(data[0].early_bird_end_date);
         applicationSuffix.has_ig_discount = !!req.body.application.ig_username;
         const earlyBirdDiscount = data[0].early_bird_discount;
         const igDiscount = data[0].ig_discount;
