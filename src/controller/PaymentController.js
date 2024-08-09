@@ -253,7 +253,7 @@ async function generateInvoiceNo() {
 	.then((auth)=>
 		getInvoiceNo(auth))
 	.then((json)=>{
-		invoice = "CL"+json.invoice_number.match(/\d/g);
+		invoice = "CL"+json.invoice_number.replace(/^\D+/g, '');
 	})
 	.catch(()=> {
 		return invoice;
