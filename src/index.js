@@ -15,6 +15,8 @@ import autoEmailRouter from './router/AutoEmailRouter.js';
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+//ensure at EDT timezone
+process.env.TZ = "America/New_York";
 
 databaseConnection(app);
 app.use('/api/v1/userauth', userauth);
