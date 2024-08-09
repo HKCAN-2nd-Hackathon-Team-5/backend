@@ -363,7 +363,7 @@ export async function createPayment(req, res) {
 						values: [invoiceNo, req.params.applicationid, new Date(), 'Admin', new Date(), 'Admin', new Date(), null, 'N', 'INITIAL'],
 						};
 					let q2 = {
-						text: `select a.application_id, a.student_id, a.form_id, a.course_ids, a.price, a.used_credit, 
+						text: `select a.application_id, a.student_id, a.form_id, a.course_ids, a.price total, a.used_credit, 
 						(case when a.has_early_bird_discount then f.early_bird_discount else 0 end) + 
 						(case when a.has_ig_discount then f.ig_discount else 0 end) +
 						(case when a.has_return_discount then f.return_discount else 0 end) discount,
@@ -373,7 +373,8 @@ export async function createPayment(req, res) {
 							case when lower(a.lang)='zh' then course_name_zh
 								when lower(a.lang) like 'zh%hant' then course_name_zh_hant
 								else course_name_en
-							end course_name
+							end course_name,
+							c.price
 							from fct_application a
 							inner join dim_student s on (a.student_id=s.student_id)
 							inner join fct_payment p on (a.application_id=p.application_id)
