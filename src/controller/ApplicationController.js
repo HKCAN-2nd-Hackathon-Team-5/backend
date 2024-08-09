@@ -12,7 +12,7 @@ export async function createApplication(req, res) {
             return;
         }
 
-        const applicationSuffix = { submit_time: new Date().toISOString().slice(0, 19).replace('T', ' ') };
+        const applicationSuffix = { submit_time: new Date() };
         let formTitle;
 
         switch (req.body.application.lang.toLowerCase()) {
