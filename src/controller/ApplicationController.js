@@ -293,7 +293,8 @@ export async function readApplications(req, res) {
 
     let query = req.app.locals.db
         .from('fct_application')
-        .select('*, dim_student!inner(*), dim_form!inner(*)');
+        .select('*, dim_student!inner(*), dim_form!inner(*)')
+		.order('submit_time', { ascending: false });
 
     if (req.params.application_id !== undefined) {
         query = query
