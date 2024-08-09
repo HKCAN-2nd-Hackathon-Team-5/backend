@@ -267,17 +267,10 @@ export async function createApplication(req, res) {
         req.body.application = application;
 
         autoEmailHelper.sendApplicationConfirm(
-            student,
+            student.first_name,
+            student.email,
             formTitle,
-            application.lang.toLowerCase(),
-            (error, info) => {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
-                console.log(info.response);
-            }
+            application.lang.toLowerCase()
         );
 
         res.status(201).json(outputObjectBuilder.prependStatus(201, null, req.body));

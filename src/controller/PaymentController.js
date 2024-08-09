@@ -572,29 +572,28 @@ export async function checkInvoices(req, res) {
 
 	studentDetails.forEach((student, id) => {
 		const form = formDetails.get(id);
-		let lang;
+		const lang = form.lang.toLowerCase();
+		let titleLang;
 
 		switch (form.lang.toLowerCase()) {
 			case 'en':
-				lang = 'title_en';
+				titleLang = 'title_en';
 				break;
 			case 'zh-hant':
 			case 'zh_hant':
-				lang = 'title_zh_hant';
+				titleLang = 'title_zh_hant';
 				break;
 			case 'zh':
-				lang = 'title_zh';
+				titleLang = 'title_zh';
 				break;
 		}
 
-		autoEmailHelper.sendEnrollConfirm(student, formTitles.get(form.form_id)[lang], lang, (error, info) => {
-			if (error) {
-				console.error(error);
-				return;
-			}
-
-			console.log(info.response);
-		});
+		autoEmailHelper.sendEnrollConfirm(
+			student.first_name,
+			student.email,
+			formTitles.get(form.form_id)[titleLang],
+			lang
+		);
 	});
 
 	res.status(200).json(outputObjectBuilder.prependStatus(200, null, { payments: payments }));
