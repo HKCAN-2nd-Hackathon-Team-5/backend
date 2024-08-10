@@ -422,7 +422,7 @@ export async function readApplications(req, res) {
             consent_name: data[i].consent_name,
             consent_phone_no: data[i].consent_phone_no,
             remark: data[i].remark,
-            submit_time: data[i].submit_time.toLocaleString(),
+            submit_time: new Date(data[i].submit_time).toISOString().slice(0, 19).replace('T', ' '),			
             has_early_bird_discount: data[i].has_early_bird_discount,
             has_ig_discount: data[i].has_ig_discount,
             has_return_discount: data[i].has_return_discount,
